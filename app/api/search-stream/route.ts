@@ -1,6 +1,7 @@
 /**
  * Streaming Search API Route
  * Returns results progressively as they become available
+ * Searches up to 10 sources concurrently and validates videos immediately
  */
 
 import { NextRequest } from 'next/server';
@@ -35,120 +36,103 @@ export async function POST(request: NextRequest) {
           return;
         }
 
-        // Send progress: searching sources
+        // Send initial progress
         controller.enqueue(encoder.encode(`data: ${JSON.stringify({ 
           type: 'progress', 
           stage: 'searching',
           checkedSources: 0,
-          totalSources: sourceIds.length
+          totalSources: sources.length
         })}\n\n`));
 
-        // Perform search with progress tracking for each source
         let checkedSourcesCount = 0;
-        const searchResults = await Promise.all(
-          sources.map(async (source: any) => {
-            try {
-              const result = await searchVideos(query.trim(), [source], page);
-              checkedSourcesCount++;
-              
-              // Send progress update after each source completes
-              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ 
-                type: 'progress', 
-                stage: 'searching',
-                checkedSources: checkedSourcesCount,
-                totalSources: sourceIds.length
-              })}\n\n`));
-              
-              return result[0];
-            } catch (error) {
-              checkedSourcesCount++;
-              
-              // Still send progress even on error
-              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ 
-                type: 'progress', 
-                stage: 'searching',
-                checkedSources: checkedSourcesCount,
-                totalSources: sourceIds.length
-              })}\n\n`));
-              
-              return {
-                results: [],
-                source: source.id,
-                error: error instanceof Error ? error.message : 'Unknown error',
-              };
-            }
-          })
-        );
+        let totalVideosFound = 0;
+        let checkedVideosCount = 0;
+        const concurrency = 10; // Process 10 sources at a time
 
-        // Get all videos from all sources
-        const allVideos = searchResults.flatMap(r => r.results);
-        
-        if (allVideos.length === 0) {
-          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ 
-            type: 'complete',
-            totalResults: 0
-          })}\n\n`));
-          controller.close();
-          return;
-        }
-
-        // Send progress: start checking videos
-        controller.enqueue(encoder.encode(`data: ${JSON.stringify({ 
-          type: 'progress', 
-          stage: 'checking',
-          checkedVideos: 0,
-          totalVideos: allVideos.length
-        })}\n\n`));
-
-        const availableVideos: any[] = [];
-        let checkedCount = 0;
-        const concurrency = 10; // Check 10 videos at a time
-
-        // Process videos in batches for immediate feedback
-        for (let i = 0; i < allVideos.length; i += concurrency) {
-          const batch = allVideos.slice(i, i + concurrency);
+        // Process sources in batches of 10, but with streaming results
+        for (let i = 0; i < sources.length; i += concurrency) {
+          const sourceBatch = sources.slice(i, i + concurrency);
           
-          const results = await Promise.all(
-            batch.map(async (video) => {
-              const isAvailable = await checkVideoAvailability(video);
-              return isAvailable ? video : null;
+          // Process each source in the batch, search + check + send results immediately
+          await Promise.all(
+            sourceBatch.map(async (source: any) => {
+              try {
+                // Step 1: Search this source
+                const result = await searchVideos(query.trim(), [source], page);
+                checkedSourcesCount++;
+                
+                // Send search progress
+                controller.enqueue(encoder.encode(`data: ${JSON.stringify({ 
+                  type: 'progress', 
+                  stage: 'searching',
+                  checkedSources: checkedSourcesCount,
+                  totalSources: sources.length
+                })}\n\n`));
+
+                const videos = result[0]?.results || [];
+                if (videos.length === 0) return;
+
+                totalVideosFound += videos.length;
+
+                // Step 2: Check videos from this source (in sub-batches of 10)
+                const validatedVideos: any[] = [];
+                
+                for (let j = 0; j < videos.length; j += 10) {
+                  const videoBatch = videos.slice(j, j + 10);
+                  
+                  // Check all 10 videos in parallel
+                  const checkResults = await Promise.all(
+                    videoBatch.map(async (video) => {
+                      const isAvailable = await checkVideoAvailability(video);
+                      checkedVideosCount++;
+                      
+                      // Send check progress after each video
+                      controller.enqueue(encoder.encode(`data: ${JSON.stringify({ 
+                        type: 'progress', 
+                        stage: 'checking',
+                        checkedVideos: checkedVideosCount,
+                        totalVideos: totalVideosFound
+                      })}\n\n`));
+                      
+                      return isAvailable ? video : null;
+                    })
+                  );
+
+                  // Collect validated videos from this sub-batch
+                  const newValidated = checkResults.filter(v => v !== null);
+                  validatedVideos.push(...newValidated);
+
+                  // Step 3: Send validated videos IMMEDIATELY (don't wait for browser validation)
+                  if (newValidated.length > 0) {
+                    controller.enqueue(encoder.encode(`data: ${JSON.stringify({ 
+                      type: 'videos',
+                      videos: newValidated,
+                      checkedVideos: checkedVideosCount,
+                      totalVideos: totalVideosFound
+                    })}\n\n`));
+                  }
+                }
+
+              } catch (error) {
+                checkedSourcesCount++;
+                
+                // Send error progress
+                controller.enqueue(encoder.encode(`data: ${JSON.stringify({ 
+                  type: 'progress', 
+                  stage: 'searching',
+                  checkedSources: checkedSourcesCount,
+                  totalSources: sources.length
+                })}\n\n`));
+              }
             })
           );
-
-          // Add available videos
-          const newAvailableVideos = results.filter(v => v !== null);
-          availableVideos.push(...newAvailableVideos);
-          
-          checkedCount += batch.length;
-
-          // ALWAYS send update after each batch (even if no new videos)
-          if (newAvailableVideos.length > 0) {
-            // Send new videos immediately
-            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ 
-              type: 'videos',
-              videos: newAvailableVideos,
-              checkedVideos: checkedCount,
-              totalVideos: allVideos.length,
-              availableCount: availableVideos.length
-            })}\n\n`));
-          }
-          
-          // Always send progress update
-          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ 
-            type: 'progress',
-            stage: 'checking',
-            checkedVideos: checkedCount,
-            totalVideos: allVideos.length,
-            availableCount: availableVideos.length
-          })}\n\n`));
         }
 
         // Send completion
         controller.enqueue(encoder.encode(`data: ${JSON.stringify({ 
           type: 'complete',
-          totalResults: availableVideos.length,
-          checkedVideos: allVideos.length,
-          totalVideos: allVideos.length
+          totalResults: checkedVideosCount,
+          totalVideos: totalVideosFound
         })}\n\n`));
 
         controller.close();

@@ -24,6 +24,8 @@ export default function Home() {
   const [searchStage, setSearchStage] = useState<'searching' | 'checking' | 'validating'>('searching');
   const [checkedVideos, setCheckedVideos] = useState(0);
   const [totalVideos, setTotalVideos] = useState(0);
+  const [validatedVideos, setValidatedVideos] = useState(0);
+  const [totalToValidate, setTotalToValidate] = useState(0);
   const router = useRouter();
   const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -53,23 +55,27 @@ export default function Home() {
     return null;
   };
 
-  // Validate videos in browser
+  // Validate videos in browser - process in batches but show results immediately
   const validateVideosInBrowser = async (videos: any[]) => {
-    const validatedVideos: any[] = [];
+    const validatedResults: any[] = [];
+    setTotalToValidate(videos.length);
+    setValidatedVideos(0);
     
-    // Test videos in batches of 3 for better performance
-    for (let i = 0; i < videos.length; i += 3) {
-      const batch = videos.slice(i, i + 3);
+    // Process in batches of 10 for better performance
+    for (let i = 0; i < videos.length; i += 10) {
+      const batch = videos.slice(i, i + 10);
       
       const results = await Promise.all(
         batch.map(async (video) => {
           const url = extractFirstVideoUrl(video);
           if (!url) {
             console.debug(`❌ No valid URL for video: ${video.vod_name}`);
+            setValidatedVideos(prev => prev + 1);
             return null;
           }
           
           const testResult = await testVideoPlayback(url);
+          setValidatedVideos(prev => prev + 1);
           
           if (testResult.canPlay) {
             console.debug(`✅ Video playable: ${video.vod_name} (${video.source})`);
@@ -81,10 +87,17 @@ export default function Home() {
         })
       );
       
-      validatedVideos.push(...results.filter(v => v !== null));
+      const batchValidated = results.filter(v => v !== null);
+      validatedResults.push(...batchValidated);
+      
+      // Return validated videos immediately after each batch
+      if (batchValidated.length > 0) {
+        // Show these videos immediately by returning early
+        return validatedResults;
+      }
     }
     
-    return validatedVideos;
+    return validatedResults;
   };
 
   const handleSearch = async (e: React.FormEvent) => {
@@ -107,6 +120,8 @@ export default function Home() {
     setSearchStage('searching');
     setCheckedVideos(0);
     setTotalVideos(0);
+    setValidatedVideos(0);
+    setTotalToValidate(0);
     
     try {
       // Get all enabled source IDs
@@ -135,6 +150,7 @@ export default function Home() {
 
       let buffer = '';
       const allVideos: any[] = [];
+      const pendingValidation: any[] = [];
       const sourceVideoCounts = new Map<string, number>();
 
       while (true) {
@@ -165,64 +181,64 @@ export default function Home() {
                 break;
 
               case 'videos':
-                // Validate videos in browser before showing them
+                // Received new videos that passed backend checks
                 console.log('📹 收到新视频:', data.videos.length, '个 - 开始浏览器验证...');
-                setSearchStage('validating');
                 
-                const validatedVideos = await validateVideosInBrowser(data.videos);
+                // Add to pending validation queue
+                pendingValidation.push(...data.videos);
                 
-                console.log(`✅ 验证完成: ${validatedVideos.length}/${data.videos.length} 个视频可播放`);
-                
-                // Only add validated videos
-                const newVideos = validatedVideos.map((video: any) => ({
-                  ...video,
-                  sourceName: getSourceName(video.source),
-                  isNew: true,
-                  addedAt: Date.now(),
-                }));
-
-                if (newVideos.length > 0) {
-                  // Add to allVideos array
-                  allVideos.push(...newVideos);
+                // Validate immediately in background
+                (async () => {
+                  // Update stage to validating
+                  setSearchStage('validating');
                   
-                  console.log('🎬 当前总视频数:', allVideos.length);
+                  const validatedVideos = await validateVideosInBrowser(data.videos);
                   
-                  // Update state with validated videos
-                  setResults([...allVideos]);
-                }
+                  console.log(`✅ 验证完成: ${validatedVideos.length}/${data.videos.length} 个视频可播放`);
+                  
+                  if (validatedVideos.length > 0) {
+                    // Mark as new for animation
+                    const newVideos = validatedVideos.map((video: any) => ({
+                      ...video,
+                      sourceName: getSourceName(video.source),
+                      isNew: true,
+                      addedAt: Date.now(),
+                    }));
 
-                // Update progress
-                setSearchStage('checking');
-                setCheckedVideos(data.checkedVideos);
-                setTotalVideos(data.totalVideos);
+                    // Add to results IMMEDIATELY
+                    allVideos.push(...newVideos);
+                    setResults([...allVideos]);
+                    
+                    console.log('🎬 当前总视频数:', allVideos.length);
 
-                // Update source counts
-                newVideos.forEach((video: any) => {
-                  const count = sourceVideoCounts.get(video.source) || 0;
-                  sourceVideoCounts.set(video.source, count + 1);
-                });
+                    // Update source counts
+                    newVideos.forEach((video: any) => {
+                      const count = sourceVideoCounts.get(video.source) || 0;
+                      sourceVideoCounts.set(video.source, count + 1);
+                    });
 
-                // Update available sources display
-                const sourcesArray = Array.from(sourceVideoCounts.entries()).map(([sourceId, count]) => ({
-                  id: sourceId,
-                  name: getSourceName(sourceId),
-                  count,
-                }));
-                setAvailableSources(sourcesArray);
+                    // Update available sources display
+                    const sourcesArray = Array.from(sourceVideoCounts.entries()).map(([sourceId, count]) => ({
+                      id: sourceId,
+                      name: getSourceName(sourceId),
+                      count,
+                    }));
+                    setAvailableSources(sourcesArray);
 
-                // Remove animation flag only for these new videos after delay
-                setTimeout(() => {
-                  setResults(prev => prev.map(v => {
-                    // Only remove isNew flag from videos that were just added
-                    const wasJustAdded = newVideos.some((nv: any) => 
-                      nv.vod_id === v.vod_id && nv.source === v.source && nv.addedAt === v.addedAt
-                    );
-                    if (wasJustAdded) {
-                      return { ...v, isNew: false };
-                    }
-                    return v;
-                  }));
-                }, 300);
+                    // Remove animation flag after delay
+                    setTimeout(() => {
+                      setResults(prev => prev.map(v => {
+                        const wasJustAdded = newVideos.some((nv: any) => 
+                          nv.vod_id === v.vod_id && nv.source === v.source && nv.addedAt === v.addedAt
+                        );
+                        if (wasJustAdded) {
+                          return { ...v, isNew: false };
+                        }
+                        return v;
+                      }));
+                    }, 300);
+                  }
+                })();
                 break;
 
               case 'complete':
@@ -343,6 +359,8 @@ export default function Home() {
                   totalSources={16}
                   checkedVideos={checkedVideos}
                   totalVideos={totalVideos}
+                  validatedVideos={validatedVideos}
+                  totalToValidate={totalToValidate}
                   stage={searchStage}
                 />
               </div>

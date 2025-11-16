@@ -85,21 +85,8 @@ function PlayerContent() {
           firstEpisodeUrl: data.data.episodes?.[0]?.url
         });
 
-        // Client-side validation: Test if episodes are actually playable
-        if (data.data.episodes && data.data.episodes.length > 0) {
-          console.log('Testing episode playability in browser...');
-          const playableEpisodes = await filterPlayableEpisodes(data.data.episodes, 5);
-          
-          if (playableEpisodes.length === 0) {
-            console.warn('No playable episodes after client-side validation');
-            setVideoError('This video source cannot be played in your browser. Please go back and try another source.');
-            setLoading(false);
-            return;
-          }
-          
-          data.data.episodes = playableEpisodes;
-          console.log(`✓ ${playableEpisodes.length} episodes passed client-side validation`);
-        }
+        // Skip client-side validation since videos are already validated during search
+        // The search page already validates all videos before showing them
 
         setVideoData(data.data);
         if (data.data.episodes && data.data.episodes.length > 0) {
@@ -205,8 +192,8 @@ function PlayerContent() {
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20">
             <div className="animate-spin rounded-full h-16 w-16 border-4 border-[var(--accent-color)] border-t-transparent mb-4"></div>
-            <p className="text-[var(--text-color-secondary)] mb-2">正在检测视频源可用性...</p>
-            <p className="text-[var(--text-color-tertiary)] text-sm">正在浏览器中测试视频播放...</p>
+            <p className="text-[var(--text-color-secondary)] mb-2">正在加载视频详情...</p>
+            <p className="text-[var(--text-color-tertiary)] text-sm">准备播放器...</p>
           </div>
         ) : videoError && !videoData ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">

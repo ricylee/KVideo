@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 interface SearchLoadingAnimationProps {
   currentSource?: string;
@@ -8,6 +8,8 @@ interface SearchLoadingAnimationProps {
   totalSources?: number;
   checkedVideos?: number;
   totalVideos?: number;
+  validatedVideos?: number;
+  totalToValidate?: number;
   stage?: 'searching' | 'checking' | 'validating';
 }
 
@@ -17,9 +19,13 @@ export function SearchLoadingAnimation({
   totalSources = 16,
   checkedVideos = 0,
   totalVideos = 0,
+  validatedVideos = 0,
+  totalToValidate = 0,
   stage = 'searching'
 }: SearchLoadingAnimationProps) {
   const [dots, setDots] = useState('');
+  const [displayProgress, setDisplayProgress] = useState(0);
+  const maxProgressRef = useRef(0);
 
   useEffect(() => {
     const dotInterval = setInterval(() => {
@@ -28,23 +34,39 @@ export function SearchLoadingAnimation({
     return () => clearInterval(dotInterval);
   }, []);
 
-  // Calculate unified progress (0-100%)
-  // Stage 1: Search sources (0-50%)
-  // Stage 2: Check videos (50-80%)
-  // Stage 3: Validate in browser (80-100%)
+  // Calculate unified progress (0-100%) with accurate percentages
   let progress = 0;
   let statusText = '';
+  let stageDescription = '';
   
   if (stage === 'searching') {
-    progress = totalSources > 0 ? (checkedSources / totalSources) * 50 : 0;
-    statusText = `${checkedSources}/${totalSources} 个源`;
+    // Stage 1: Search sources (0-33%)
+    progress = totalSources > 0 ? (checkedSources / totalSources) * 33 : 0;
+    statusText = `已搜索 ${checkedSources}/${totalSources} 个源`;
+    stageDescription = '正在多源并行搜索';
   } else if (stage === 'checking') {
-    progress = 50 + (totalVideos > 0 ? (checkedVideos / totalVideos) * 30 : 0);
-    statusText = `${checkedVideos}/${totalVideos} 个视频`;
+    // Stage 2: Check videos (33-66%)
+    progress = 33 + (totalVideos > 0 ? (checkedVideos / totalVideos) * 33 : 0);
+    statusText = `已检测 ${checkedVideos}/${totalVideos} 个视频`;
+    stageDescription = '正在验证视频可用性';
   } else if (stage === 'validating') {
-    progress = 80 + Math.min(20, Math.random() * 20); // Animated progress for validation
-    statusText = '验证播放能力';
+    // Stage 3: Validate in browser (66-100%)
+    progress = 66 + (totalToValidate > 0 ? (validatedVideos / totalToValidate) * 34 : 0);
+    statusText = `已验证 ${validatedVideos}/${totalToValidate} 个视频`;
+    stageDescription = '正在浏览器测试播放';
   }
+
+  // Ensure progress is between 0 and 100
+  progress = Math.max(0, Math.min(100, progress));
+
+  // Prevent progress from going backward - always move forward or stay same
+  useEffect(() => {
+    if (progress >= maxProgressRef.current) {
+      maxProgressRef.current = progress;
+      setDisplayProgress(progress);
+    }
+    // If new progress is lower (shouldn't happen but just in case), keep the max
+  }, [progress]);
 
   return (
     <div className="w-full space-y-3 animate-fade-in">
@@ -65,20 +87,20 @@ export function SearchLoadingAnimation({
         </svg>
         
         <span className="text-sm font-medium text-[var(--text-color-secondary)]">
-          {stage === 'searching' ? '正在搜索视频源' : stage === 'validating' ? '正在验证视频播放能力' : '正在检测视频可用性'}{dots}
+          {stageDescription}{dots}
         </span>
       </div>
 
       {/* Progress Bar - Unified 0-100% */}
       <div className="w-full">
         <div 
-          className="h-1 bg-[color-mix(in_srgb,var(--glass-bg)_50%,transparent)] overflow-hidden"
+          className="h-2 bg-[color-mix(in_srgb,var(--glass-bg)_50%,transparent)] overflow-hidden"
           style={{ borderRadius: 'var(--radius-full)' }}
         >
           <div
-            className="h-full bg-[var(--accent-color)] transition-all duration-500 ease-out relative"
+            className="h-full bg-gradient-to-r from-[var(--accent-color)] to-[color-mix(in_srgb,var(--accent-color)_120%,white)] transition-all duration-300 ease-out relative"
             style={{ 
-              width: `${progress}%`,
+              width: `${displayProgress}%`,
               borderRadius: 'var(--radius-full)'
             }}
           >
@@ -88,9 +110,9 @@ export function SearchLoadingAnimation({
         </div>
         
         {/* Progress Info - Real-time count */}
-        <div className="flex items-center justify-between mt-2 text-xs text-[var(--text-color-secondary)]">
-          <span>{statusText}</span>
-          <span className="font-medium">{Math.round(progress)}%</span>
+        <div className="flex items-center justify-between mt-2 text-xs">
+          <span className="text-[var(--text-color-secondary)]">{statusText}</span>
+          <span className="font-semibold text-[var(--accent-color)]">{Math.round(displayProgress)}%</span>
         </div>
       </div>
     </div>
