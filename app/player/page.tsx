@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { ThemeSwitcher } from '@/components/ThemeSwitcher';
 import { Icons } from '@/components/ui/Icon';
+import Image from 'next/image';
 
 function PlayerContent() {
   const searchParams = useSearchParams();
@@ -27,22 +28,22 @@ function PlayerContent() {
   const getSourceName = (sourceId: string | null): string => {
     if (!sourceId) return '';
     const sourceNames: Record<string, string> = {
-      'custom_0': '电影天堂',
-      'custom_1': '如意',
-      'custom_2': '暴风',
-      'custom_3': '天涯',
-      'custom_4': '非凡影视',
-      'custom_5': '360',
-      'custom_6': '卧龙',
-      'custom_7': '极速',
-      'custom_8': '魔爪',
-      'custom_9': '魔都',
-      'custom_10': '海外看',
-      'custom_11': '新浪',
-      'custom_12': '光速',
-      'custom_13': '红牛',
-      'custom_14': '樱花',
-      'custom_15': '飞速',
+      'dytt': '电影天堂',
+      'ruyi': '如意',
+      'baofeng': '暴风',
+      'tianya': '天涯',
+      'feifan': '非凡影视',
+      'sanliuling': '360',
+      'wolong': '卧龙',
+      'jisu': '极速',
+      'mozhua': '魔爪',
+      'modu': '魔都',
+      'zuida': '最大',
+      'yinghua': '樱花',
+      'baiduyun': '百度云',
+      'wujin': '无尽',
+      'wangwang': '旺旺',
+      'ikun': 'iKun',
     };
     return sourceNames[sourceId] || sourceId;
   };
@@ -154,14 +155,30 @@ function PlayerContent() {
       <nav className="sticky top-4 z-50 mx-4 mt-4 mb-8">
         <div className="max-w-7xl mx-auto bg-[var(--glass-bg)] backdrop-blur-[25px] saturate-[180%] border border-[var(--glass-border)] rounded-[var(--radius-2xl)] shadow-[0_4px_12px_color-mix(in_srgb,var(--shadow-color)_40%,transparent)] px-6 py-4">
           <div className="flex items-center justify-between">
-            <Button 
-              variant="secondary" 
-              onClick={() => router.back()}
-              className="flex items-center gap-2"
-            >
-              <Icons.ChevronLeft size={20} />
-              <span>返回</span>
-            </Button>
+            <div className="flex items-center gap-3">
+              <Button 
+                variant="secondary" 
+                onClick={() => router.push('/')}
+                className="flex items-center gap-2 p-2 w-10 h-10"
+                title="返回首页"
+              >
+                <Image 
+                  src="/icon.png" 
+                  alt="KVideo" 
+                  width={24} 
+                  height={24}
+                  className="object-contain"
+                />
+              </Button>
+              <Button 
+                variant="secondary" 
+                onClick={() => router.back()}
+                className="flex items-center gap-2"
+              >
+                <Icons.ChevronLeft size={20} />
+                <span>返回</span>
+              </Button>
+            </div>
             <ThemeSwitcher />
           </div>
         </div>

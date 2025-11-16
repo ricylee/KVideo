@@ -11,7 +11,7 @@ const HEALTH_CHECK_TIMEOUT = 5000;
 // Default predefined video sources - Real Chinese video APIs
 const DEFAULT_SOURCES: VideoSource[] = [
   {
-    id: 'custom_0',
+    id: 'dytt',
     name: '电影天堂',
     baseUrl: 'http://caiji.dyttzyapi.com/api.php/provide/vod',
     searchPath: '',
@@ -20,7 +20,7 @@ const DEFAULT_SOURCES: VideoSource[] = [
     priority: 1,
   },
   {
-    id: 'custom_1',
+    id: 'ruyi',
     name: '如意',
     baseUrl: 'https://cj.rycjapi.com/api.php/provide/vod',
     searchPath: '',
@@ -29,7 +29,7 @@ const DEFAULT_SOURCES: VideoSource[] = [
     priority: 2,
   },
   {
-    id: 'custom_2',
+    id: 'baofeng',
     name: '暴风',
     baseUrl: 'https://bfzyapi.com/api.php/provide/vod',
     searchPath: '',
@@ -38,7 +38,7 @@ const DEFAULT_SOURCES: VideoSource[] = [
     priority: 3,
   },
   {
-    id: 'custom_3',
+    id: 'tianya',
     name: '天涯',
     baseUrl: 'https://tyyszy.com/api.php/provide/vod',
     searchPath: '',
@@ -47,7 +47,7 @@ const DEFAULT_SOURCES: VideoSource[] = [
     priority: 4,
   },
   {
-    id: 'custom_4',
+    id: 'feifan',
     name: '非凡影视',
     baseUrl: 'http://ffzy5.tv/api.php/provide/vod',
     searchPath: '',
@@ -56,7 +56,7 @@ const DEFAULT_SOURCES: VideoSource[] = [
     priority: 5,
   },
   {
-    id: 'custom_5',
+    id: 'sanliuling',
     name: '360',
     baseUrl: 'https://360zy.com/api.php/provide/vod',
     searchPath: '',
@@ -65,7 +65,7 @@ const DEFAULT_SOURCES: VideoSource[] = [
     priority: 6,
   },
   {
-    id: 'custom_6',
+    id: 'wolong',
     name: '卧龙',
     baseUrl: 'https://wolongzyw.com/api.php/provide/vod',
     searchPath: '',
@@ -74,7 +74,7 @@ const DEFAULT_SOURCES: VideoSource[] = [
     priority: 7,
   },
   {
-    id: 'custom_7',
+    id: 'jisu',
     name: '极速',
     baseUrl: 'https://jszyapi.com/api.php/provide/vod',
     searchPath: '',
@@ -83,7 +83,7 @@ const DEFAULT_SOURCES: VideoSource[] = [
     priority: 8,
   },
   {
-    id: 'custom_8',
+    id: 'mozhua',
     name: '魔爪',
     baseUrl: 'https://mozhuazy.com/api.php/provide/vod',
     searchPath: '',
@@ -92,7 +92,7 @@ const DEFAULT_SOURCES: VideoSource[] = [
     priority: 9,
   },
   {
-    id: 'custom_9',
+    id: 'modu',
     name: '魔都',
     baseUrl: 'https://www.mdzyapi.com/api.php/provide/vod',
     searchPath: '',
@@ -101,7 +101,7 @@ const DEFAULT_SOURCES: VideoSource[] = [
     priority: 10,
   },
   {
-    id: 'custom_10',
+    id: 'zuida',
     name: '最大',
     baseUrl: 'https://api.zuidapi.com/api.php/provide/vod',
     searchPath: '',
@@ -110,7 +110,7 @@ const DEFAULT_SOURCES: VideoSource[] = [
     priority: 11,
   },
   {
-    id: 'custom_11',
+    id: 'yinghua',
     name: '樱花',
     baseUrl: 'https://m3u8.apiyhzy.com/api.php/provide/vod',
     searchPath: '',
@@ -119,7 +119,7 @@ const DEFAULT_SOURCES: VideoSource[] = [
     priority: 12,
   },
   {
-    id: 'custom_12',
+    id: 'baiduyun',
     name: '百度云',
     baseUrl: 'https://api.apibdzy.com/api.php/provide/vod',
     searchPath: '',
@@ -128,7 +128,7 @@ const DEFAULT_SOURCES: VideoSource[] = [
     priority: 13,
   },
   {
-    id: 'custom_13',
+    id: 'wujin',
     name: '无尽',
     baseUrl: 'https://api.wujinapi.me/api.php/provide/vod',
     searchPath: '',
@@ -137,7 +137,7 @@ const DEFAULT_SOURCES: VideoSource[] = [
     priority: 14,
   },
   {
-    id: 'custom_14',
+    id: 'wangwang',
     name: '旺旺',
     baseUrl: 'https://wwzy.tv/api.php/provide/vod',
     searchPath: '',
@@ -146,7 +146,7 @@ const DEFAULT_SOURCES: VideoSource[] = [
     priority: 15,
   },
   {
-    id: 'custom_15',
+    id: 'ikun',
     name: 'iKun',
     baseUrl: 'https://ikunzyapi.com/api.php/provide/vod',
     searchPath: '',

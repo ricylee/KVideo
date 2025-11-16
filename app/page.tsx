@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { ThemeSwitcher } from '@/components/ThemeSwitcher';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -48,9 +49,9 @@ export default function Home() {
     
     try {
       // Get all enabled source IDs
-      const sourceIds = ['custom_0', 'custom_1', 'custom_2', 'custom_3', 'custom_4', 
-                         'custom_5', 'custom_6', 'custom_7', 'custom_8', 'custom_9',
-                         'custom_10', 'custom_11', 'custom_12', 'custom_13', 'custom_14', 'custom_15'];
+      const sourceIds = ['dytt', 'ruyi', 'baofeng', 'tianya', 'feifan', 
+                         'sanliuling', 'wolong', 'jisu', 'mozhua', 'modu',
+                         'zuida', 'yinghua', 'baiduyun', 'wujin', 'wangwang', 'ikun'];
       
       // Use streaming API
       const response = await fetch('/api/search-stream', {
@@ -180,39 +181,24 @@ export default function Home() {
 
   const getSourceName = (sourceId: string): string => {
     const sourceNames: Record<string, string> = {
-      'custom_0': '电影天堂',
-      'custom_1': '如意',
-      'custom_2': '暴风',
-      'custom_3': '天涯',
-      'custom_4': '非凡影视',
-      'custom_5': '360',
-      'custom_6': '卧龙',
-      'custom_7': '极速',
-      'custom_8': '魔爪',
-      'custom_9': '魔都',
-      'custom_10': '海外看',
-      'custom_11': '新浪',
-      'custom_12': '光速',
-      'custom_13': '红牛',
-      'custom_14': '樱花',
-      'custom_15': '飞速',
+      'dytt': '电影天堂',
+      'ruyi': '如意',
+      'baofeng': '暴风',
+      'tianya': '天涯',
+      'feifan': '非凡影视',
+      'sanliuling': '360',
+      'wolong': '卧龙',
+      'jisu': '极速',
+      'mozhua': '魔爪',
+      'modu': '魔都',
+      'zuida': '最大',
+      'yinghua': '樱花',
+      'baiduyun': '百度云',
+      'wujin': '无尽',
+      'wangwang': '旺旺',
+      'ikun': 'iKun',
     };
     return sourceNames[sourceId] || sourceId;
-  };
-
-  const handleVideoClick = (video: any) => {
-    // Abort ongoing search when user clicks a video
-    if (abortControllerRef.current && loading) {
-      abortControllerRef.current.abort();
-      setLoading(false);
-    }
-
-    const params = new URLSearchParams({
-      id: video.vod_id,
-      source: video.source,
-      title: video.vod_name,
-    });
-    router.push(`/player?${params.toString()}`);
   };
 
   return (
@@ -295,7 +281,7 @@ export default function Home() {
         </div>
 
         {/* Results Section */}
-        {(results.length >= 10 || (!loading && results.length > 0)) && (
+        {(results.length >= 1 || (!loading && results.length > 0)) && (
           <div className="animate-fade-in">
             <div className="flex flex-col gap-4 mb-6">
               <div className="flex items-center justify-between flex-wrap gap-3">
@@ -348,67 +334,78 @@ export default function Home() {
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
-              {results.map((video, index) => (
-                <Card
-                  key={`${video.vod_id}-${index}`}
-                  onClick={() => handleVideoClick(video)}
-                  className={`p-0 overflow-hidden group cursor-pointer ${video.isNew ? 'animate-scale-in' : ''}`}
-                >
-                  {/* Poster */}
-                  <div className="relative aspect-[2/3] bg-[color-mix(in_srgb,var(--glass-bg)_50%,transparent)] overflow-hidden" style={{ borderRadius: 'var(--radius-2xl) var(--radius-2xl) 0 0' }}>
-                    {video.vod_pic ? (
-                      <img
-                        src={video.vod_pic}
-                        alt={video.vod_name}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                        loading="lazy"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <Icons.Film size={64} className="text-[var(--text-color-secondary)]" />
-                      </div>
-                    )}
-                    
-                    {/* Source Badge - Top Left */}
-                    {video.sourceName && (
-                      <div className="absolute top-2 left-2 z-10">
-                        <Badge variant="primary" className="text-xs backdrop-blur-md bg-[var(--accent-color)]/90">
-                          {video.sourceName}
-                        </Badge>
-                      </div>
-                    )}
-                    
-                    {/* Overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <div className="absolute bottom-0 left-0 right-0 p-3">
-                        {video.type_name && (
-                          <Badge variant="secondary" className="text-xs mb-2">
-                            {video.type_name}
-                          </Badge>
-                        )}
-                        {video.vod_year && (
-                          <div className="flex items-center gap-1 text-white/80 text-xs">
-                            <Icons.Calendar size={12} />
-                            <span>{video.vod_year}</span>
+              {results.map((video, index) => {
+                const videoUrl = `/player?${new URLSearchParams({
+                  id: video.vod_id,
+                  source: video.source,
+                  title: video.vod_name,
+                }).toString()}`;
+                
+                return (
+                  <Link 
+                    key={`${video.vod_id}-${index}`}
+                    href={videoUrl}
+                  >
+                    <Card
+                      className={`p-0 overflow-hidden group cursor-pointer ${video.isNew ? 'animate-scale-in' : ''}`}
+                    >
+                      {/* Poster */}
+                      <div className="relative aspect-[2/3] bg-[color-mix(in_srgb,var(--glass-bg)_50%,transparent)] overflow-hidden" style={{ borderRadius: 'var(--radius-2xl) var(--radius-2xl) 0 0' }}>
+                        {video.vod_pic ? (
+                          <img
+                            src={video.vod_pic}
+                            alt={video.vod_name}
+                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                            loading="lazy"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <Icons.Film size={64} className="text-[var(--text-color-secondary)]" />
                           </div>
                         )}
+                        
+                        {/* Source Badge - Top Left */}
+                        {video.sourceName && (
+                          <div className="absolute top-2 left-2 z-10">
+                            <Badge variant="primary" className="text-xs backdrop-blur-md bg-[var(--accent-color)]/90">
+                              {video.sourceName}
+                            </Badge>
+                          </div>
+                        )}
+                        
+                        {/* Overlay */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                          <div className="absolute bottom-0 left-0 right-0 p-3">
+                            {video.type_name && (
+                              <Badge variant="secondary" className="text-xs mb-2">
+                                {video.type_name}
+                              </Badge>
+                            )}
+                            {video.vod_year && (
+                              <div className="flex items-center gap-1 text-white/80 text-xs">
+                                <Icons.Calendar size={12} />
+                                <span>{video.vod_year}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
 
-                  {/* Info */}
-                  <div className="p-3">
-                    <h4 className="font-semibold text-sm text-[var(--text-color)] line-clamp-2 group-hover:text-[var(--accent-color)] transition-colors">
-                      {video.vod_name}
-                    </h4>
-                    {video.vod_remarks && (
-                      <p className="text-xs text-[var(--text-color-secondary)] mt-1 line-clamp-1">
-                        {video.vod_remarks}
-                      </p>
-                    )}
-                  </div>
-                </Card>
-              ))}
+                      {/* Info */}
+                      <div className="p-3">
+                        <h4 className="font-semibold text-sm text-[var(--text-color)] line-clamp-2 group-hover:text-[var(--accent-color)] transition-colors">
+                          {video.vod_name}
+                        </h4>
+                        {video.vod_remarks && (
+                          <p className="text-xs text-[var(--text-color-secondary)] mt-1 line-clamp-1">
+                            {video.vod_remarks}
+                          </p>
+                        )}
+                      </div>
+                    </Card>
+                  </Link>
+                );
+              })}
             </div>
           </div>
         )}
