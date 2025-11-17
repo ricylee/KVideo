@@ -311,16 +311,18 @@ export function CustomVideoPlayer({
       clearTimeout(skipForwardTimeoutRef.current);
     }
     
-    // Accumulate skip amount
+    // Calculate new skip amount
     const newSkipAmount = skipForwardAmount + 10;
     setSkipForwardAmount(newSkipAmount);
     setShowSkipForwardIndicator(true);
     setIsSkipForwardAnimatingOut(false);
     
-    // Actually skip the video
-    videoRef.current.currentTime = Math.min(videoRef.current.currentTime + 10, duration);
+    // Apply the accumulated skip immediately to video
+    const targetTime = Math.min(videoRef.current.currentTime + 10, duration);
+    videoRef.current.currentTime = targetTime;
+    setCurrentTime(targetTime);
     
-    // Start fade out animation after 200ms (half of original 400ms)
+    // Start fade out animation after 300ms
     skipForwardTimeoutRef.current = setTimeout(() => {
       setIsSkipForwardAnimatingOut(true);
       // Hide indicator after animation completes (200ms)
@@ -329,7 +331,7 @@ export function CustomVideoPlayer({
         setSkipForwardAmount(0);
         setIsSkipForwardAnimatingOut(false);
       }, 200);
-    }, 200);
+    }, 300);
   };
 
   const skipBackward = () => {
@@ -348,16 +350,18 @@ export function CustomVideoPlayer({
       clearTimeout(skipBackwardTimeoutRef.current);
     }
     
-    // Accumulate skip amount
+    // Calculate new skip amount
     const newSkipAmount = skipBackwardAmount + 10;
     setSkipBackwardAmount(newSkipAmount);
     setShowSkipBackwardIndicator(true);
     setIsSkipBackwardAnimatingOut(false);
     
-    // Actually skip the video
-    videoRef.current.currentTime = Math.max(videoRef.current.currentTime - 10, 0);
+    // Apply the accumulated skip immediately to video
+    const targetTime = Math.max(videoRef.current.currentTime - 10, 0);
+    videoRef.current.currentTime = targetTime;
+    setCurrentTime(targetTime);
     
-    // Start fade out animation after 200ms (half of original 400ms)
+    // Start fade out animation after 300ms
     skipBackwardTimeoutRef.current = setTimeout(() => {
       setIsSkipBackwardAnimatingOut(true);
       // Hide indicator after animation completes (200ms)
@@ -366,7 +370,7 @@ export function CustomVideoPlayer({
         setSkipBackwardAmount(0);
         setIsSkipBackwardAnimatingOut(false);
       }, 200);
-    }, 200);
+    }, 300);
   };
 
   // Cleanup timeout on unmount
