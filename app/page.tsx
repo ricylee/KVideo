@@ -10,8 +10,10 @@ import { VideoGrid } from '@/components/search/VideoGrid';
 import { EmptyState } from '@/components/search/EmptyState';
 import { NoResults } from '@/components/search/NoResults';
 import { ResultsHeader } from '@/components/search/ResultsHeader';
+import { TypeBadges } from '@/components/search/TypeBadges';
 import { useSearchCache } from '@/lib/hooks/useSearchCache';
 import { useParallelSearch } from '@/lib/hooks/useParallelSearch';
+import { useTypeBadges } from '@/lib/hooks/useTypeBadges';
 
 function HomePage() {
   const router = useRouter();
@@ -37,6 +39,14 @@ function HomePage() {
     saveToCache,
     (q: string) => router.replace(`/?q=${encodeURIComponent(q)}`, { scroll: false })
   );
+
+  // Type badges hook - auto-collects and filters by type_name
+  const {
+    typeBadges,
+    selectedTypes,
+    filteredVideos,
+    toggleType,
+  } = useTypeBadges(results);
 
   // Load cached results on mount
   useEffect(() => {
@@ -136,7 +146,19 @@ function HomePage() {
               totalVideos={totalVideosFound}
               availableSources={availableSources}
             />
-            <VideoGrid videos={results} />
+            
+            {/* Type Badges - Auto-collected from search results */}
+            {typeBadges.length > 0 && (
+              <TypeBadges
+                badges={typeBadges}
+                selectedTypes={selectedTypes}
+                onToggleType={toggleType}
+                className="mb-6"
+              />
+            )}
+            
+            {/* Display filtered or all videos */}
+            <VideoGrid videos={filteredVideos} />
           </div>
         )}
 

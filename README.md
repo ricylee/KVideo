@@ -76,6 +76,12 @@ KVideo is built using cutting-edge web technologies:
 - Search result caching (10-minute duration)
 - Loading animations with progress indicators
 - Source availability badges
+- **🏷️ Auto-collected type badges with filtering** (NEW!)
+  - Automatically collects category badges from search results
+  - Interactive filtering by video type/category
+  - Real-time badge count updates
+  - Smart badge removal when videos are deleted
+  - Beautiful Liquid Glass design integration
 
 #### 📱 **Fully Responsive**
 - Mobile-first design approach
