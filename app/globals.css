@@ -434,6 +434,12 @@ nav:where(.sticky, .fixed),
   color: white;
   cursor: pointer;
   transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  position: relative;
+  z-index: 10;
 }
 
 .btn-icon:hover {

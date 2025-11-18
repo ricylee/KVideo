@@ -372,14 +372,28 @@ export function MobileVideoPlayer({
   };
 
   const toggleFullscreen = () => {
-    if (!containerRef.current) return;
+    if (!containerRef.current || !videoRef.current) return;
     
     if (!isFullscreen) {
-      if (containerRef.current.requestFullscreen) {
+      // iOS Safari uses video element's webkitEnterFullscreen
+      if ((videoRef.current as any).webkitEnterFullscreen) {
+        try {
+          (videoRef.current as any).webkitEnterFullscreen();
+        } catch (err) {
+          console.warn('iOS fullscreen error:', err);
+        }
+      } else if (containerRef.current.requestFullscreen) {
         containerRef.current.requestFullscreen();
       }
     } else {
-      if (document.exitFullscreen) {
+      // iOS Safari uses video element's webkitExitFullscreen
+      if ((videoRef.current as any).webkitExitFullscreen) {
+        try {
+          (videoRef.current as any).webkitExitFullscreen();
+        } catch (err) {
+          console.warn('iOS exit fullscreen error:', err);
+        }
+      } else if (document.exitFullscreen) {
         document.exitFullscreen();
       }
     }
@@ -387,11 +401,30 @@ export function MobileVideoPlayer({
 
   useEffect(() => {
     const handleFullscreenChange = () => {
-      setIsFullscreen(!!document.fullscreenElement);
+      setIsFullscreen(!!document.fullscreenElement || !!(videoRef.current as any)?.webkitDisplayingFullscreen);
+    };
+
+    const handleWebkitFullscreenChange = () => {
+      setIsFullscreen(!!(videoRef.current as any)?.webkitDisplayingFullscreen);
     };
 
     document.addEventListener('fullscreenchange', handleFullscreenChange);
-    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    
+    // iOS Safari specific events
+    if (videoRef.current) {
+      videoRef.current.addEventListener('webkitbeginfullscreen', handleWebkitFullscreenChange);
+      videoRef.current.addEventListener('webkitendfullscreen', handleWebkitFullscreenChange);
+    }
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+      if (videoRef.current) {
+        videoRef.current.removeEventListener('webkitbeginfullscreen', handleWebkitFullscreenChange);
+        videoRef.current.removeEventListener('webkitendfullscreen', handleWebkitFullscreenChange);
+      }
+    };
   }, []);
 
   const togglePictureInPicture = async () => {
@@ -493,7 +526,7 @@ export function MobileVideoPlayer({
 
       {/* Controls */}
       <div 
-        className={`absolute bottom-0 left-0 right-0 transition-all duration-300 ${
+        className={`absolute bottom-0 left-0 right-0 z-50 transition-all duration-300 ${
           showControls ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
         }`}
         style={{ pointerEvents: showControls ? 'auto' : 'none' }}
@@ -522,7 +555,18 @@ export function MobileVideoPlayer({
           <div className="flex items-center justify-between gap-1 sm:gap-2">
             {/* Left: Play + Time */}
             <div className="flex items-center gap-1 sm:gap-2 min-w-0">
-              <button onClick={togglePlay} className="btn-icon p-2 sm:p-2.5 flex-shrink-0" aria-label={isPlaying ? 'Pause' : 'Play'}>
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  togglePlay();
+                }}
+                onTouchEnd={(e) => {
+                  e.stopPropagation();
+                }}
+                className="btn-icon p-2 sm:p-2.5 flex-shrink-0 touch-manipulation relative z-[60]" 
+                aria-label={isPlaying ? 'Pause' : 'Play'}
+                style={{ WebkitTapHighlightColor: 'transparent' }}
+              >
                 {isPlaying ? <Icons.Pause size={20} className="sm:w-[22px] sm:h-[22px]" /> : <Icons.Play size={20} className="sm:w-[22px] sm:h-[22px]" />}
               </button>
               
@@ -535,11 +579,20 @@ export function MobileVideoPlayer({
             {/* Right: More + Fullscreen */}
             <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
               {/* More Menu Button */}
-              <div className="relative">
+              <div className="relative z-[60]">
                 <button 
-                  onClick={() => setShowMoreMenu(!showMoreMenu)} 
-                  className="btn-icon p-1.5 sm:p-2 flex-shrink-0" 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowMoreMenu(!showMoreMenu);
+                  }}
+                  onTouchEnd={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    setShowMoreMenu(!showMoreMenu);
+                  }}
+                  className="btn-icon p-1.5 sm:p-2 flex-shrink-0 touch-manipulation" 
                   aria-label="更多"
+                  style={{ WebkitTapHighlightColor: 'transparent' }}
                 >
                   <svg width="18" height="18" className="sm:w-5 sm:h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <circle cx="12" cy="12" r="1"/>
@@ -554,11 +607,19 @@ export function MobileVideoPlayer({
                     <div className="bg-[rgba(255,255,255,0.1)] backdrop-blur-[25px] rounded-[var(--radius-2xl)] border border-[rgba(255,255,255,0.2)] shadow-[0_8px_32px_rgba(0,0,0,0.4)] overflow-hidden">
                     {/* Copy Link Option */}
                     <button 
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.stopPropagation();
                         setShowMoreMenu(false);
                         handleCopyLink();
                       }}
-                      className="w-full px-4 py-3 text-left text-sm text-white hover:bg-white/20 flex items-center gap-3 transition-all"
+                      onTouchEnd={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        setShowMoreMenu(false);
+                        handleCopyLink();
+                      }}
+                      className="w-full px-4 py-3 text-left text-sm text-white hover:bg-white/20 flex items-center gap-3 transition-all touch-manipulation"
+                      style={{ WebkitTapHighlightColor: 'transparent' }}
                     >
                       <Icons.Link size={18} />
                       <span>复制链接</span>
@@ -568,11 +629,19 @@ export function MobileVideoPlayer({
 
                     {/* Volume Option */}
                     <button 
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.stopPropagation();
                         setShowMoreMenu(false);
                         setShowVolumeMenu(true);
                       }}
-                      className="w-full px-4 py-3 text-left text-sm text-white hover:bg-white/20 flex items-center gap-3 transition-all"
+                      onTouchEnd={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        setShowMoreMenu(false);
+                        setShowVolumeMenu(true);
+                      }}
+                      className="w-full px-4 py-3 text-left text-sm text-white hover:bg-white/20 flex items-center gap-3 transition-all touch-manipulation"
+                      style={{ WebkitTapHighlightColor: 'transparent' }}
                     >
                       {isMuted || volume === 0 ? <Icons.VolumeX size={18} /> : <Icons.Volume2 size={18} />}
                       <span>音量</span>
@@ -580,11 +649,19 @@ export function MobileVideoPlayer({
 
                     {/* Speed Option */}
                     <button 
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.stopPropagation();
                         setShowMoreMenu(false);
                         setShowSpeedMenu(true);
                       }}
-                      className="w-full px-4 py-3 text-left text-sm text-white hover:bg-white/20 flex items-center gap-3 transition-all"
+                      onTouchEnd={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        setShowMoreMenu(false);
+                        setShowSpeedMenu(true);
+                      }}
+                      className="w-full px-4 py-3 text-left text-sm text-white hover:bg-white/20 flex items-center gap-3 transition-all touch-manipulation"
+                      style={{ WebkitTapHighlightColor: 'transparent' }}
                     >
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <circle cx="12" cy="12" r="10"/>
@@ -596,11 +673,19 @@ export function MobileVideoPlayer({
                     {/* PiP Option */}
                     {isPiPSupported && (
                       <button 
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation();
                           setShowMoreMenu(false);
                           togglePictureInPicture();
                         }}
-                        className="w-full px-4 py-3 text-left text-sm text-white hover:bg-white/20 flex items-center gap-3 transition-all"
+                        onTouchEnd={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                          setShowMoreMenu(false);
+                          togglePictureInPicture();
+                        }}
+                        className="w-full px-4 py-3 text-left text-sm text-white hover:bg-white/20 flex items-center gap-3 transition-all touch-manipulation"
+                        style={{ WebkitTapHighlightColor: 'transparent' }}
                       >
                         <Icons.PictureInPicture size={18} />
                         <span>画中画</span>
@@ -612,7 +697,20 @@ export function MobileVideoPlayer({
               </div>
 
               {/* Fullscreen Button */}
-              <button onClick={toggleFullscreen} className="btn-icon p-1.5 sm:p-2 flex-shrink-0" aria-label={isFullscreen ? '退出全屏' : '全屏'}>
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleFullscreen();
+                }}
+                onTouchEnd={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  toggleFullscreen();
+                }}
+                className="btn-icon p-1.5 sm:p-2 flex-shrink-0 touch-manipulation relative z-[60]" 
+                aria-label={isFullscreen ? '退出全屏' : '全屏'}
+                style={{ WebkitTapHighlightColor: 'transparent' }}
+              >
                 {isFullscreen ? <Icons.Minimize size={18} className="sm:w-5 sm:h-5" /> : <Icons.Maximize size={18} className="sm:w-5 sm:h-5" />}
               </button>
             </div>
