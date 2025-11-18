@@ -78,7 +78,7 @@ export function SearchForm({
           onChange={(e) => setQuery(e.target.value)}
           onFocus={handleInputFocus}
           placeholder="搜索电影、电视剧、综艺..."
-          className="text-lg pr-24 md:pr-32 truncate"
+          className="text-base sm:text-lg pr-24 md:pr-32 truncate"
           role="combobox"
           aria-expanded={showHistory && !isLoading}
           aria-controls="search-history-listbox"
@@ -99,7 +99,7 @@ export function SearchForm({
           type="submit"
           disabled={!query.trim()}
           variant="primary"
-          className="absolute right-2 top-1/2 -translate-y-1/2 px-4 md:px-8"
+          className="absolute right-2 top-1/2 -translate-y-1/2 px-3 sm:px-4 md:px-8"
         >
           <span className="flex items-center gap-2">
             <Icons.Search size={20} />

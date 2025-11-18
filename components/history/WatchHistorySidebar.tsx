@@ -80,7 +80,7 @@ export function WatchHistorySidebar() {
         style={{ 
           transform: isOpen ? 'translateX(0) translateZ(0)' : 'translateX(100%) translateZ(0)'
         }}
-        className={`fixed top-0 right-0 bottom-0 w-[90%] max-w-[420px] z-[2000] bg-[var(--glass-bg)] backdrop-blur-[25px] saturate-[180%] border-l border-[var(--glass-border)] rounded-tl-[var(--radius-2xl)] rounded-bl-[var(--radius-2xl)] p-6 flex flex-col shadow-[0_8px_32px_rgba(0,0,0,0.2)] transition-transform duration-[400ms] cubic-bezier(0.2,0.8,0.2,1)`}
+        className={`fixed top-0 right-0 bottom-0 w-[85%] sm:w-[90%] max-w-[420px] z-[2000] bg-[var(--glass-bg)] backdrop-blur-[25px] saturate-[180%] border-l border-[var(--glass-border)] rounded-tl-[var(--radius-2xl)] rounded-bl-[var(--radius-2xl)] p-6 flex flex-col shadow-[0_8px_32px_rgba(0,0,0,0.2)] transition-transform duration-[400ms] cubic-bezier(0.2,0.8,0.2,1)`}
       >
         {/* Header */}
         <header className="flex items-center justify-between mb-6 pb-4 border-b border-[var(--glass-border)]">

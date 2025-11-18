@@ -686,37 +686,37 @@ export const announceToScreenReader = (message: string) => {
 ### 🟢 Medium Priority (中优先级，1 个月内完成)
 
 #### 9. **响应式优化** (预计 2 小时)
-- [ ] **VideoGrid.tsx**
-  - [ ] 修改 `2xl:grid-cols-7` → `2xl:grid-cols-6`
-  - [ ] 添加 `max-w-[1920px] mx-auto` 限制最大宽度
+- [x] **VideoGrid.tsx**
+  - [x] 修改 `2xl:grid-cols-7` → `2xl:grid-cols-6`
+  - [x] 添加 `max-w-[1920px] mx-auto` 限制最大宽度
 
-- [ ] **SearchForm.tsx**
-  - [ ] 修改 `text-lg` → `text-base sm:text-lg`
-  - [ ] 调整移动端按钮内边距
+- [x] **SearchForm.tsx**
+  - [x] 修改 `text-lg` → `text-base sm:text-lg`
+  - [x] 调整移动端按钮内边距
 
-- [ ] **WatchHistorySidebar.tsx**
-  - [ ] 修改 `w-[90%]` → `w-[85%] sm:w-[90%]`
+- [x] **WatchHistorySidebar.tsx**
+  - [x] 修改 `w-[90%]` → `w-[85%] sm:w-[90%]`
 
 #### 10. **创建辅助 Hooks** (预计 3 小时)
-- [ ] 创建 `lib/hooks/useKeyboardNavigation.ts`
+- [x] 创建 `lib/hooks/useKeyboardNavigation.ts`
   ```tsx
   export function useKeyboardNavigation(items: any[], onSelect: (item: any) => void) {
     // 实现方向键导航逻辑
   }
   ```
-- [ ] 创建 `lib/hooks/useFocusTrap.ts`
+- [x] 创建 `lib/hooks/useFocusTrap.ts`
   ```tsx
   export function useFocusTrap(containerRef: RefObject<HTMLElement>) {
     // 实现焦点陷阱
   }
   ```
-- [ ] 创建 `lib/hooks/useMediaQuery.ts`
+- [x] 创建 `lib/hooks/useMediaQuery.ts`
   ```tsx
   export function useMediaQuery(query: string) {
     // 实现媒体查询 hook
   }
   ```
-- [ ] 创建 `lib/hooks/useClickOutside.ts`
+- [x] 创建 `lib/hooks/useClickOutside.ts`
   ```tsx
   export function useClickOutside(ref: RefObject<HTMLElement>, handler: () => void) {
     // 点击外部关闭

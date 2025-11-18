@@ -32,9 +32,9 @@ export function VideoGrid({ videos, className = '' }: VideoGridProps) {
   
   // Calculate columns for grid navigation
   const getColumns = () => {
-    if (typeof window === 'undefined') return 7;
+    if (typeof window === 'undefined') return 6;
     const width = window.innerWidth;
-    if (width >= 1536) return 7; // 2xl
+    if (width >= 1536) return 6; // 2xl
     if (width >= 1280) return 6; // xl
     if (width >= 1024) return 5; // lg
     if (width >= 768) return 4; // md
@@ -84,7 +84,7 @@ export function VideoGrid({ videos, className = '' }: VideoGridProps) {
   return (
     <div 
       ref={gridRef}
-      className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-3 md:gap-4 lg:gap-6 ${className}`}
+      className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-6 gap-3 md:gap-4 lg:gap-6 max-w-[1920px] mx-auto ${className}`}
       role="list"
       aria-label="视频搜索结果"
     >
