@@ -12,17 +12,17 @@ interface MobileVideoPlayerProps {
   initialTime?: number;
 }
 
-export function MobileVideoPlayer({ 
-  src, 
+export function MobileVideoPlayer({
+  src,
   poster,
-  onError, 
+  onError,
   onTimeUpdate,
-  initialTime = 0 
+  initialTime = 0
 }: MobileVideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const progressBarRef = useRef<HTMLDivElement>(null);
-  
+
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -42,7 +42,8 @@ export function MobileVideoPlayer({
   const [wasPlayingBeforeMenu, setWasPlayingBeforeMenu] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
-  
+  const [viewportWidth, setViewportWidth] = useState(0);
+
   const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const skipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isDraggingProgressRef = useRef(false);
@@ -61,29 +62,43 @@ export function MobileVideoPlayer({
     }
   }, []);
 
+  // Track viewport width for responsive toolbar
+  useEffect(() => {
+    const updateViewportWidth = () => {
+      setViewportWidth(window.innerWidth);
+    };
+
+    // Set initial width
+    updateViewportWidth();
+
+    // Update on resize
+    window.addEventListener('resize', updateViewportWidth);
+    return () => window.removeEventListener('resize', updateViewportWidth);
+  }, []);
+
   // Skip forward/backward with indicator
   const skipVideo = (seconds: number, side: 'left' | 'right') => {
     if (!videoRef.current) return;
-    
+
     // Clear existing timeout
     if (skipTimeoutRef.current) {
       clearTimeout(skipTimeoutRef.current);
     }
-    
+
     // If same side, accumulate
     const newSkipAmount = skipSide === side ? skipAmount + Math.abs(seconds) : Math.abs(seconds);
     setSkipAmount(newSkipAmount);
     setSkipSide(side);
     setShowSkipIndicator(true);
-    
+
     // Apply skip
-    const targetTime = side === 'left' 
+    const targetTime = side === 'left'
       ? Math.max(videoRef.current.currentTime - Math.abs(seconds), 0)
       : Math.min(videoRef.current.currentTime + Math.abs(seconds), duration);
-    
+
     videoRef.current.currentTime = targetTime;
     setCurrentTime(targetTime);
-    
+
     // Hide indicator after 1500ms of inactivity
     skipTimeoutRef.current = setTimeout(() => {
       setShowSkipIndicator(false);
@@ -141,7 +156,7 @@ export function MobileVideoPlayer({
       }
       return;
     }
-    
+
     // If playing, auto-hide after 3 seconds
     const hideControls = () => {
       if (controlsTimeoutRef.current) {
@@ -174,16 +189,16 @@ export function MobileVideoPlayer({
         setWasPlayingBeforeMenu(true);
         videoRef.current.pause();
       }
-      
+
       // Clear existing timeout
       if (menuIdleTimeoutRef.current) {
         clearTimeout(menuIdleTimeoutRef.current);
       }
-      
+
       // Set timeout to auto-close after 2 seconds
       menuIdleTimeoutRef.current = setTimeout(() => {
         setShowMoreMenu(false);
-        
+
         // Resume video if it was playing
         if (wasPlayingBeforeMenu && videoRef.current) {
           videoRef.current.play().catch(err => console.warn('Resume play error:', err));
@@ -191,7 +206,7 @@ export function MobileVideoPlayer({
         }
       }, 2000);
     }
-    
+
     return () => {
       if (menuIdleTimeoutRef.current) {
         clearTimeout(menuIdleTimeoutRef.current);
@@ -214,16 +229,16 @@ export function MobileVideoPlayer({
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent | TouchEvent) => {
       const target = e.target as HTMLElement;
-      
+
       // Check if click is outside menu areas
-      const isMenuClick = target.closest('.menu-container') || 
-                          target.closest('[aria-label="更多"]');
-      
+      const isMenuClick = target.closest('.menu-container') ||
+        target.closest('[aria-label="更多"]');
+
       if (!isMenuClick && (showMoreMenu || showVolumeMenu || showSpeedMenu)) {
         setShowMoreMenu(false);
         setShowVolumeMenu(false);
         setShowSpeedMenu(false);
-        
+
         // Resume video if it was playing
         if (wasPlayingBeforeMenu && videoRef.current) {
           videoRef.current.play().catch(err => console.warn('Resume play error:', err));
@@ -245,9 +260,9 @@ export function MobileVideoPlayer({
 
   const togglePlay = async () => {
     if (!videoRef.current || isTogglingRef.current) return;
-    
+
     isTogglingRef.current = true;
-    
+
     try {
       if (isPlaying) {
         videoRef.current.pause();
@@ -256,7 +271,7 @@ export function MobileVideoPlayer({
         setShowMoreMenu(false);
         setShowVolumeMenu(false);
         setShowSpeedMenu(false);
-        
+
         await videoRef.current.play();
       }
     } catch (error) {
@@ -269,7 +284,7 @@ export function MobileVideoPlayer({
 
   const handlePlay = () => setIsPlaying(true);
   const handlePause = () => setIsPlaying(false);
-  
+
   const handleTimeUpdateEvent = () => {
     if (!videoRef.current || isDraggingProgressRef.current) return;
     const current = videoRef.current.currentTime;
@@ -288,7 +303,7 @@ export function MobileVideoPlayer({
     if (initialTime > 0) {
       videoRef.current.currentTime = initialTime;
     }
-    
+
     // Auto-play the video when loaded
     videoRef.current.play().catch(err => {
       console.warn('Autoplay was prevented:', err);
@@ -306,10 +321,10 @@ export function MobileVideoPlayer({
   // Progress bar seeking with real-time drag
   const updateProgressFromEvent = (e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement> | TouchEvent | MouseEvent) => {
     if (!videoRef.current || !progressBarRef.current) return;
-    
+
     const rect = progressBarRef.current.getBoundingClientRect();
     let clientX: number;
-    
+
     // Handle both mouse and touch events
     if ('touches' in e) {
       const touch = e.touches[0] || (e as React.TouchEvent<HTMLDivElement>).changedTouches?.[0];
@@ -318,10 +333,10 @@ export function MobileVideoPlayer({
     } else {
       clientX = (e as MouseEvent | React.MouseEvent<HTMLDivElement>).clientX;
     }
-    
+
     const pos = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
     const newTime = pos * duration;
-    
+
     return newTime;
   };
 
@@ -376,58 +391,64 @@ export function MobileVideoPlayer({
   };
 
   const toggleFullscreen = () => {
-    if (!containerRef.current || !videoRef.current) return;
-    
+    if (!containerRef.current) return;
+
     if (!isFullscreen) {
-      // iOS Safari uses video element's webkitEnterFullscreen
-      if ((videoRef.current as any).webkitEnterFullscreen) {
-        try {
-          (videoRef.current as any).webkitEnterFullscreen();
-        } catch (err) {
-          console.warn('iOS fullscreen error:', err);
-        }
-      } else if (containerRef.current.requestFullscreen) {
-        containerRef.current.requestFullscreen();
+      // Use container fullscreen to maintain custom controls
+      // Try standard fullscreen API first
+      if (containerRef.current.requestFullscreen) {
+        containerRef.current.requestFullscreen().catch(err => {
+          console.warn('Fullscreen request failed:', err);
+        });
+      }
+      // Fallback to webkit prefixed version for older iOS
+      else if ((containerRef.current as any).webkitRequestFullscreen) {
+        (containerRef.current as any).webkitRequestFullscreen();
+      }
+      // Fallback to webkit prefixed version with different capitalization
+      else if ((containerRef.current as any).webkitRequestFullScreen) {
+        (containerRef.current as any).webkitRequestFullScreen();
       }
     } else {
-      // iOS Safari uses video element's webkitExitFullscreen
-      if ((videoRef.current as any).webkitExitFullscreen) {
-        try {
-          (videoRef.current as any).webkitExitFullscreen();
-        } catch (err) {
-          console.warn('iOS exit fullscreen error:', err);
-        }
-      } else if (document.exitFullscreen) {
-        document.exitFullscreen();
+      // Exit fullscreen
+      if (document.exitFullscreen) {
+        document.exitFullscreen().catch(err => {
+          console.warn('Exit fullscreen failed:', err);
+        });
+      }
+      // Fallback to webkit prefixed version
+      else if ((document as any).webkitExitFullscreen) {
+        (document as any).webkitExitFullscreen();
+      }
+      // Fallback to webkit prefixed version with different capitalization
+      else if ((document as any).webkitCancelFullScreen) {
+        (document as any).webkitCancelFullScreen();
       }
     }
   };
 
   useEffect(() => {
     const handleFullscreenChange = () => {
-      setIsFullscreen(!!document.fullscreenElement || !!(videoRef.current as any)?.webkitDisplayingFullscreen);
+      // Check for standard fullscreen element or webkit variants
+      const isInFullscreen = !!(
+        document.fullscreenElement ||
+        (document as any).webkitFullscreenElement ||
+        (document as any).webkitCurrentFullScreenElement
+      );
+      setIsFullscreen(isInFullscreen);
     };
 
-    const handleWebkitFullscreenChange = () => {
-      setIsFullscreen(!!(videoRef.current as any)?.webkitDisplayingFullscreen);
-    };
-
+    // Listen for all fullscreen change events
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
-    
-    // iOS Safari specific events
-    if (videoRef.current) {
-      videoRef.current.addEventListener('webkitbeginfullscreen', handleWebkitFullscreenChange);
-      videoRef.current.addEventListener('webkitendfullscreen', handleWebkitFullscreenChange);
-    }
+    document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+    document.addEventListener('MSFullscreenChange', handleFullscreenChange);
 
     return () => {
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
       document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
-      if (videoRef.current) {
-        videoRef.current.removeEventListener('webkitbeginfullscreen', handleWebkitFullscreenChange);
-        videoRef.current.removeEventListener('webkitendfullscreen', handleWebkitFullscreenChange);
-      }
+      document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('MSFullscreenChange', handleFullscreenChange);
     };
   }, []);
 
@@ -456,11 +477,11 @@ export function MobileVideoPlayer({
   const showToastNotification = (message: string) => {
     setToastMessage(message);
     setShowToast(true);
-    
+
     if (toastTimeoutRef.current) {
       clearTimeout(toastTimeoutRef.current);
     }
-    
+
     toastTimeoutRef.current = setTimeout(() => {
       setShowToast(false);
       setTimeout(() => setToastMessage(null), 300);
@@ -479,7 +500,18 @@ export function MobileVideoPlayer({
   };
 
   const speeds = [0.5, 0.75, 1, 1.25, 1.5, 2];
-  
+
+  // Responsive sizing based on viewport width
+  // Use single breakpoint: < 640px = compact layout, >= 640px = full layout
+  const isCompactLayout = viewportWidth < 640;
+
+  // Dynamic sizing
+  const iconSize = isCompactLayout ? 20 : 22;
+  const buttonPadding = isCompactLayout ? 'p-2' : 'p-2.5';
+  const controlsGap = isCompactLayout ? 'gap-2' : 'gap-3';
+  const textSize = isCompactLayout ? 'text-xs' : 'text-sm';
+  const controlsPadding = isCompactLayout ? 'px-3 pb-3' : 'px-4 pb-4';
+
   const formatTime = (seconds: number) => {
     if (isNaN(seconds)) return '0:00:00';
     const hours = Math.floor(seconds / 3600);
@@ -489,7 +521,7 @@ export function MobileVideoPlayer({
   };
 
   return (
-    <div 
+    <div
       ref={containerRef}
       className="relative aspect-video bg-black rounded-[var(--radius-2xl)] overflow-hidden"
     >
@@ -508,6 +540,8 @@ export function MobileVideoPlayer({
         onCanPlay={() => setIsLoading(false)}
         onTouchEnd={handleTap}
         playsInline
+        webkit-playsinline="true"
+        x-webkit-airplay="allow"
       />
 
       {/* Loading Spinner */}
@@ -519,9 +553,8 @@ export function MobileVideoPlayer({
 
       {/* Skip Indicators */}
       {showSkipIndicator && skipSide && (
-        <div className={`absolute top-1/2 -translate-y-1/2 pointer-events-none ${
-          skipSide === 'left' ? 'left-8' : 'right-8'
-        }`}>
+        <div className={`absolute top-1/2 -translate-y-1/2 pointer-events-none ${skipSide === 'left' ? 'left-8' : 'right-8'
+          }`}>
           <div className="text-white text-3xl font-bold drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)] animate-scale-in">
             {skipSide === 'left' ? '-' : '+'}{skipAmount}
           </div>
@@ -529,15 +562,14 @@ export function MobileVideoPlayer({
       )}
 
       {/* Controls */}
-      <div 
-        className={`absolute bottom-0 left-0 right-0 z-50 transition-all duration-300 ${
-          showControls ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
-        }`}
+      <div
+        className={`absolute bottom-0 left-0 right-0 z-50 transition-all duration-300 ${showControls ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
+          }`}
         style={{ pointerEvents: showControls ? 'auto' : 'none' }}
       >
         {/* Progress Bar */}
         <div className="px-4 pb-2">
-          <div 
+          <div
             ref={progressBarRef}
             className="h-1 bg-white/30 rounded-full cursor-pointer"
             onClick={handleProgressClick}
@@ -545,7 +577,7 @@ export function MobileVideoPlayer({
             onTouchMove={handleProgressTouchMove}
             onTouchEnd={handleProgressTouchEnd}
           >
-            <div 
+            <div
               className="h-full bg-[var(--accent-color)] rounded-full relative"
               style={{ width: `${(currentTime / duration) * 100 || 0}%` }}
             >
@@ -554,174 +586,376 @@ export function MobileVideoPlayer({
           </div>
         </div>
 
-        {/* Controls Bar */}
-        <div className="bg-gradient-to-t from-black/90 via-black/70 to-transparent px-2 sm:px-4 pb-3 sm:pb-4 pt-2">
-          <div className="flex items-center justify-between gap-1 sm:gap-2">
-            {/* Left: Play + Time */}
-            <div className="flex items-center gap-1 sm:gap-2 min-w-0">
-              <button 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  togglePlay();
-                }}
-                onTouchEnd={(e) => {
-                  e.stopPropagation();
-                }}
-                className="btn-icon p-2 sm:p-2.5 flex-shrink-0 touch-manipulation relative z-[60]" 
-                aria-label={isPlaying ? 'Pause' : 'Play'}
-                style={{ WebkitTapHighlightColor: 'transparent' }}
-              >
-                {isPlaying ? <Icons.Pause size={20} className="sm:w-[22px] sm:h-[22px]" /> : <Icons.Play size={20} className="sm:w-[22px] sm:h-[22px]" />}
-              </button>
-              
-              {/* Time Display */}
-              <span className="text-white text-[10px] sm:text-xs font-medium tabular-nums whitespace-nowrap">
-                {formatTime(currentTime)} / {formatTime(duration)}
-              </span>
-            </div>
 
-            {/* Right: More + Fullscreen */}
-            <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-              {/* More Menu Button */}
-              <div className="relative z-[60]">
-                <button 
+        {/* Controls Bar */}
+        <div className={`bg-gradient-to-t from-black/90 via-black/70 to-transparent ${controlsPadding} pt-2`}>
+          {isCompactLayout ? (
+            // Compact Layout for narrow screens (< 640px)
+            <div className={`flex items-center justify-between ${controlsGap}`}>
+              {/* Left: Play + Time */}
+              <div className={`flex items-center ${controlsGap} min-w-0`}>
+                <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    setShowMoreMenu(!showMoreMenu);
+                    togglePlay();
+                  }}
+                  onTouchEnd={(e) => {
+                    e.stopPropagation();
+                  }}
+                  className={`btn-icon ${buttonPadding} flex-shrink-0 touch-manipulation relative z-[60]`}
+                  aria-label={isPlaying ? 'Pause' : 'Play'}
+                  style={{ WebkitTapHighlightColor: 'transparent' }}
+                >
+                  {isPlaying ? <Icons.Pause size={iconSize} /> : <Icons.Play size={iconSize} />}
+                </button>
+
+                {/* Time Display */}
+                <span className={`text-white ${textSize} font-medium tabular-nums whitespace-nowrap`}>
+                  {formatTime(currentTime)} / {formatTime(duration)}
+                </span>
+              </div>
+
+              {/* Right: More + Fullscreen */}
+              <div className={`flex items-center ${controlsGap} flex-shrink-0`}>
+                {/* More Menu Button */}
+                <div className="relative z-[60]">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowMoreMenu(!showMoreMenu);
+                    }}
+                    onTouchEnd={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      setShowMoreMenu(!showMoreMenu);
+                    }}
+                    className={`btn-icon ${buttonPadding} flex-shrink-0 touch-manipulation`}
+                    aria-label="更多"
+                    style={{ WebkitTapHighlightColor: 'transparent' }}
+                  >
+                    <svg width={iconSize} height={iconSize} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="1" />
+                      <circle cx="12" cy="5" r="1" />
+                      <circle cx="12" cy="19" r="1" />
+                    </svg>
+                  </button>
+
+                  {/* More Menu Dropdown */}
+                  {showMoreMenu && (
+                    <div className="absolute bottom-full right-0 mb-2 min-w-[160px] z-[100] menu-container">
+                      <div className="bg-[rgba(255,255,255,0.1)] backdrop-blur-[25px] rounded-[var(--radius-2xl)] border border-[rgba(255,255,255,0.2)] shadow-[0_8px_32px_rgba(0,0,0,0.4)] overflow-hidden">
+                        {/* Copy Link Option */}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setShowMoreMenu(false);
+                            handleCopyLink();
+                          }}
+                          onTouchEnd={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            setShowMoreMenu(false);
+                            handleCopyLink();
+                          }}
+                          className="w-full px-4 py-3 text-left text-sm text-white hover:bg-white/20 flex items-center gap-3 transition-all touch-manipulation"
+                          style={{ WebkitTapHighlightColor: 'transparent' }}
+                        >
+                          <Icons.Link size={18} />
+                          <span>复制链接</span>
+                        </button>
+
+                        <div className="h-px bg-white/10 my-1" />
+
+                        {/* Volume Option */}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setShowMoreMenu(false);
+                            setShowVolumeMenu(true);
+                          }}
+                          onTouchEnd={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            setShowMoreMenu(false);
+                            setShowVolumeMenu(true);
+                          }}
+                          className="w-full px-4 py-3 text-left text-sm text-white hover:bg-white/20 flex items-center gap-3 transition-all touch-manipulation"
+                          style={{ WebkitTapHighlightColor: 'transparent' }}
+                        >
+                          {isMuted || volume === 0 ? <Icons.VolumeX size={18} /> : <Icons.Volume2 size={18} />}
+                          <span>音量</span>
+                        </button>
+
+                        {/* Speed Option */}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setShowMoreMenu(false);
+                            setShowSpeedMenu(true);
+                          }}
+                          onTouchEnd={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            setShowMoreMenu(false);
+                            setShowSpeedMenu(true);
+                          }}
+                          className="w-full px-4 py-3 text-left text-sm text-white hover:bg-white/20 flex items-center gap-3 transition-all touch-manipulation"
+                          style={{ WebkitTapHighlightColor: 'transparent' }}
+                        >
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="12" cy="12" r="10" />
+                            <polyline points="12 6 12 12 16 14" />
+                          </svg>
+                          <span>速度 {playbackRate}x</span>
+                        </button>
+
+                        {/* PiP Option */}
+                        {isPiPSupported && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setShowMoreMenu(false);
+                              togglePictureInPicture();
+                            }}
+                            onTouchEnd={(e) => {
+                              e.stopPropagation();
+                              e.preventDefault();
+                              setShowMoreMenu(false);
+                              togglePictureInPicture();
+                            }}
+                            className="w-full px-4 py-3 text-left text-sm text-white hover:bg-white/20 flex items-center gap-3 transition-all touch-manipulation"
+                            style={{ WebkitTapHighlightColor: 'transparent' }}
+                          >
+                            <Icons.PictureInPicture size={18} />
+                            <span>画中画</span>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Fullscreen Button */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleFullscreen();
                   }}
                   onTouchEnd={(e) => {
                     e.stopPropagation();
                     e.preventDefault();
+                    toggleFullscreen();
+                  }}
+                  className={`btn-icon ${buttonPadding} flex-shrink-0 touch-manipulation relative z-[60]`}
+                  aria-label={isFullscreen ? '退出全屏' : '全屏'}
+                  style={{ WebkitTapHighlightColor: 'transparent' }}
+                >
+                  {isFullscreen ? <Icons.Minimize size={iconSize} /> : <Icons.Maximize size={iconSize} />}
+                </button>
+              </div>
+            </div>
+          ) : (
+            // Full Layout for wide screens (>= 640px)
+            <div className={`flex items-center ${controlsGap}`}>
+              {/* Left Controls */}
+              <div className={`flex items-center ${controlsGap}`}>
+                {/* Play/Pause Button */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    togglePlay();
+                  }}
+                  className={`btn-icon ${buttonPadding} flex-shrink-0 touch-manipulation relative z-[60]`}
+                  aria-label={isPlaying ? 'Pause' : 'Play'}
+                  style={{ WebkitTapHighlightColor: 'transparent' }}
+                >
+                  {isPlaying ? <Icons.Pause size={iconSize} /> : <Icons.Play size={iconSize} />}
+                </button>
+
+                {/* Skip Backward Button */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    skipVideo(10, 'left');
+                  }}
+                  className={`btn-icon ${buttonPadding} flex-shrink-0 touch-manipulation`}
+                  aria-label="后退 10 秒"
+                  style={{ WebkitTapHighlightColor: 'transparent' }}
+                >
+                  <Icons.SkipBack size={iconSize} />
+                </button>
+
+                {/* Skip Forward Button */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    skipVideo(10, 'right');
+                  }}
+                  className={`btn-icon ${buttonPadding} flex-shrink-0 touch-manipulation`}
+                  aria-label="前进 10 秒"
+                  style={{ WebkitTapHighlightColor: 'transparent' }}
+                >
+                  <Icons.SkipForward size={iconSize} />
+                </button>
+
+                {/* Volume Button with Slider */}
+                <div className="relative">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowVolumeMenu(!showVolumeMenu);
+                    }}
+                    className={`btn-icon ${buttonPadding} flex-shrink-0 touch-manipulation`}
+                    aria-label="音量"
+                    style={{ WebkitTapHighlightColor: 'transparent' }}
+                  >
+                    {isMuted || volume === 0 ? <Icons.VolumeX size={iconSize} /> : <Icons.Volume2 size={iconSize} />}
+                  </button>
+
+                  {/* Volume Slider Dropdown */}
+                  {showVolumeMenu && (
+                    <div className="absolute bottom-full left-0 mb-2 z-[100] menu-container">
+                      <div className="bg-[rgba(255,255,255,0.1)] backdrop-blur-[25px] rounded-[var(--radius-2xl)] border border-[rgba(255,255,255,0.2)] shadow-[0_8px_32px_rgba(0,0,0,0.4)] p-3 flex flex-col items-center gap-2 min-w-[48px]">
+                        {/* Mute Button */}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleMute();
+                          }}
+                          className="btn-icon p-1.5"
+                        >
+                          {isMuted || volume === 0 ? <Icons.VolumeX size={18} /> : <Icons.Volume2 size={18} />}
+                        </button>
+
+                        {/* Vertical Volume Slider */}
+                        <input
+                          type="range"
+                          min="0"
+                          max="1"
+                          step="0.01"
+                          value={isMuted ? 0 : volume}
+                          onChange={(e) => {
+                            e.stopPropagation();
+                            const newVolume = parseFloat(e.target.value);
+                            setVolume(newVolume);
+                            if (videoRef.current) {
+                              videoRef.current.volume = newVolume;
+                            }
+                            setIsMuted(newVolume === 0);
+                          }}
+                          className="h-24 w-1 bg-white/30 rounded-full appearance-none cursor-pointer [writing-mode:vertical-lr] [direction:rtl] [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white"
+                          style={{ WebkitAppearance: 'slider-vertical' }}
+                        />
+
+                        {/* Volume Percentage */}
+                        <span className="text-white text-xs font-medium tabular-nums">
+                          {Math.round((isMuted ? 0 : volume) * 100)}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Time Display */}
+                <span className={`text-white ${textSize} font-medium tabular-nums whitespace-nowrap`}>
+                  {formatTime(currentTime)} / {formatTime(duration)}
+                </span>
+              </div>
+
+              {/* Flexible Space */}
+              <div className="flex-1" />
+
+              {/* Right Controls */}
+              <div className={`flex items-center ${controlsGap} flex-shrink-0`}>
+                {/* Speed Button */}
+                <div className="relative">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowSpeedMenu(!showSpeedMenu);
+                    }}
+                    className={`btn-icon ${buttonPadding} flex-shrink-0 touch-manipulation`}
+                    aria-label="播放速度"
+                    style={{ WebkitTapHighlightColor: 'transparent' }}
+                  >
+                    <span className={`text-white ${textSize} font-medium`}>{playbackRate}x</span>
+                  </button>
+
+                  {/* Speed Menu Dropdown */}
+                  {showSpeedMenu && (
+                    <div className="absolute bottom-full right-0 mb-2 z-[100] menu-container">
+                      <div className="bg-[rgba(255,255,255,0.1)] backdrop-blur-[25px] rounded-[var(--radius-2xl)] border border-[rgba(255,255,255,0.2)] shadow-[0_8px_32px_rgba(0,0,0,0.4)] p-2 flex gap-2">
+                        {speeds.map((speed) => (
+                          <button
+                            key={speed}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              changePlaybackSpeed(speed);
+                            }}
+                            className={`px-3 py-1.5 rounded-[var(--radius-full)] text-xs font-medium transition-colors whitespace-nowrap ${playbackRate === speed
+                              ? 'bg-[var(--accent-color)] text-white'
+                              : 'bg-white/20 text-white hover:bg-white/30'
+                              }`}
+                          >
+                            {speed}x
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Picture-in-Picture Button */}
+                {isPiPSupported && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      togglePictureInPicture();
+                    }}
+                    className={`btn-icon ${buttonPadding} flex-shrink-0 touch-manipulation`}
+                    aria-label="画中画"
+                    style={{ WebkitTapHighlightColor: 'transparent' }}
+                  >
+                    <Icons.PictureInPicture size={iconSize} />
+                  </button>
+                )}
+
+                {/* More Menu Button */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
                     setShowMoreMenu(!showMoreMenu);
                   }}
-                  className="btn-icon p-1.5 sm:p-2 flex-shrink-0 touch-manipulation" 
+                  className={`btn-icon ${buttonPadding} flex-shrink-0 touch-manipulation`}
                   aria-label="更多"
                   style={{ WebkitTapHighlightColor: 'transparent' }}
                 >
-                  <svg width="18" height="18" className="sm:w-5 sm:h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="12" cy="12" r="1"/>
-                    <circle cx="12" cy="5" r="1"/>
-                    <circle cx="12" cy="19" r="1"/>
+                  <svg width={iconSize} height={iconSize} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="1" />
+                    <circle cx="12" cy="5" r="1" />
+                    <circle cx="12" cy="19" r="1" />
                   </svg>
                 </button>
 
-                {/* More Menu Dropdown */}
-                {showMoreMenu && (
-                  <div className="absolute bottom-full right-0 mb-2 min-w-[160px] z-[100] menu-container">
-                    <div className="bg-[rgba(255,255,255,0.1)] backdrop-blur-[25px] rounded-[var(--radius-2xl)] border border-[rgba(255,255,255,0.2)] shadow-[0_8px_32px_rgba(0,0,0,0.4)] overflow-hidden">
-                    {/* Copy Link Option */}
-                    <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setShowMoreMenu(false);
-                        handleCopyLink();
-                      }}
-                      onTouchEnd={(e) => {
-                        e.stopPropagation();
-                        e.preventDefault();
-                        setShowMoreMenu(false);
-                        handleCopyLink();
-                      }}
-                      className="w-full px-4 py-3 text-left text-sm text-white hover:bg-white/20 flex items-center gap-3 transition-all touch-manipulation"
-                      style={{ WebkitTapHighlightColor: 'transparent' }}
-                    >
-                      <Icons.Link size={18} />
-                      <span>复制链接</span>
-                    </button>
-
-                    <div className="h-px bg-white/10 my-1" />
-
-                    {/* Volume Option */}
-                    <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setShowMoreMenu(false);
-                        setShowVolumeMenu(true);
-                      }}
-                      onTouchEnd={(e) => {
-                        e.stopPropagation();
-                        e.preventDefault();
-                        setShowMoreMenu(false);
-                        setShowVolumeMenu(true);
-                      }}
-                      className="w-full px-4 py-3 text-left text-sm text-white hover:bg-white/20 flex items-center gap-3 transition-all touch-manipulation"
-                      style={{ WebkitTapHighlightColor: 'transparent' }}
-                    >
-                      {isMuted || volume === 0 ? <Icons.VolumeX size={18} /> : <Icons.Volume2 size={18} />}
-                      <span>音量</span>
-                    </button>
-
-                    {/* Speed Option */}
-                    <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setShowMoreMenu(false);
-                        setShowSpeedMenu(true);
-                      }}
-                      onTouchEnd={(e) => {
-                        e.stopPropagation();
-                        e.preventDefault();
-                        setShowMoreMenu(false);
-                        setShowSpeedMenu(true);
-                      }}
-                      className="w-full px-4 py-3 text-left text-sm text-white hover:bg-white/20 flex items-center gap-3 transition-all touch-manipulation"
-                      style={{ WebkitTapHighlightColor: 'transparent' }}
-                    >
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <circle cx="12" cy="12" r="10"/>
-                        <polyline points="12 6 12 12 16 14"/>
-                      </svg>
-                      <span>速度 {playbackRate}x</span>
-                    </button>
-
-                    {/* PiP Option */}
-                    {isPiPSupported && (
-                      <button 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setShowMoreMenu(false);
-                          togglePictureInPicture();
-                        }}
-                        onTouchEnd={(e) => {
-                          e.stopPropagation();
-                          e.preventDefault();
-                          setShowMoreMenu(false);
-                          togglePictureInPicture();
-                        }}
-                        className="w-full px-4 py-3 text-left text-sm text-white hover:bg-white/20 flex items-center gap-3 transition-all touch-manipulation"
-                        style={{ WebkitTapHighlightColor: 'transparent' }}
-                      >
-                        <Icons.PictureInPicture size={18} />
-                        <span>画中画</span>
-                      </button>
-                    )}
-                    </div>
-                  </div>
-                )}
+                {/* Fullscreen Button */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleFullscreen();
+                  }}
+                  className={`btn-icon ${buttonPadding} flex-shrink-0 touch-manipulation relative z-[60]`}
+                  aria-label={isFullscreen ? '退出全屏' : '全屏'}
+                  style={{ WebkitTapHighlightColor: 'transparent' }}
+                >
+                  {isFullscreen ? <Icons.Minimize size={iconSize} /> : <Icons.Maximize size={iconSize} />}
+                </button>
               </div>
-
-              {/* Fullscreen Button */}
-              <button 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  toggleFullscreen();
-                }}
-                onTouchEnd={(e) => {
-                  e.stopPropagation();
-                  e.preventDefault();
-                  toggleFullscreen();
-                }}
-                className="btn-icon p-1.5 sm:p-2 flex-shrink-0 touch-manipulation relative z-[60]" 
-                aria-label={isFullscreen ? '退出全屏' : '全屏'}
-                style={{ WebkitTapHighlightColor: 'transparent' }}
-              >
-                {isFullscreen ? <Icons.Minimize size={18} className="sm:w-5 sm:h-5" /> : <Icons.Maximize size={18} className="sm:w-5 sm:h-5" />}
-              </button>
             </div>
-          </div>
+          )}
 
-          {/* Volume Menu (shown after clicking from More menu) */}
-          {showVolumeMenu && (
+
+          {/* Volume Menu (shown after clicking from More menu in compact layout) */}
+          {showVolumeMenu && isCompactLayout && (
             <div className="mt-3 pt-3 border-t border-white/20 menu-container">
               <div className="flex items-center gap-3">
                 <button onClick={toggleMute} className="btn-icon p-2">
@@ -747,14 +981,14 @@ export function MobileVideoPlayer({
                 <span className="text-white text-xs font-medium tabular-nums min-w-[2rem]">
                   {Math.round((isMuted ? 0 : volume) * 100)}
                 </span>
-                <button 
+                <button
                   onClick={() => {
                     setShowVolumeMenu(false);
                     if (wasPlayingBeforeMenu && videoRef.current) {
                       videoRef.current.play().catch(err => console.warn('Resume play error:', err));
                       setWasPlayingBeforeMenu(false);
                     }
-                  }} 
+                  }}
                   className="text-white/60 hover:text-white text-xs"
                 >
                   关闭
@@ -763,59 +997,54 @@ export function MobileVideoPlayer({
             </div>
           )}
 
-          {/* Speed Menu (shown after clicking from More menu) */}
-          {showSpeedMenu && (
+          {/* Speed Menu (shown after clicking from More menu in compact layout) */}
+          {showSpeedMenu && isCompactLayout && (
             <div className="mt-3 pt-3 border-t border-white/20 menu-container">
               <div className="flex gap-2 flex-wrap">
                 {speeds.map((speed) => (
                   <button
                     key={speed}
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.stopPropagation();
                       changePlaybackSpeed(speed);
-                      setShowSpeedMenu(false);
-                      
-                      // Resume video after changing speed
-                      if (wasPlayingBeforeMenu && videoRef.current) {
-                        videoRef.current.play().catch(err => console.warn('Resume play error:', err));
-                        setWasPlayingBeforeMenu(false);
-                      }
                     }}
-                    className={`px-3 py-1.5 rounded-[var(--radius-full)] text-xs font-medium transition-colors ${
-                      playbackRate === speed
-                        ? 'bg-[var(--accent-color)] text-white'
-                        : 'bg-white/20 text-white hover:bg-white/30'
-                    }`}
+                    className={`px-3 py-1.5 rounded-[var(--radius-full)] text-xs font-medium transition-colors ${playbackRate === speed
+                      ? 'bg-[var(--accent-color)] text-white'
+                      : 'bg-white/20 text-white hover:bg-white/30'
+                      }`}
                   >
                     {speed}x
                   </button>
                 ))}
-                <button 
-                  onClick={() => {
-                    setShowSpeedMenu(false);
-                    if (wasPlayingBeforeMenu && videoRef.current) {
-                      videoRef.current.play().catch(err => console.warn('Resume play error:', err));
-                      setWasPlayingBeforeMenu(false);
-                    }
-                  }} 
-                  className="ml-auto text-white/60 hover:text-white text-xs px-2"
-                >
-                  关闭
-                </button>
               </div>
+              <button
+                onClick={() => {
+                  setShowSpeedMenu(false);
+                  if (wasPlayingBeforeMenu && videoRef.current) {
+                    videoRef.current.play().catch(err => console.warn('Resume play error:', err));
+                    setWasPlayingBeforeMenu(false);
+                  }
+                }}
+                className="text-white/60 hover:text-white text-xs mt-2"
+              >
+                关闭
+              </button>
             </div>
           )}
         </div>
-      </div>
+      </div >
 
       {/* Toast Notification */}
-      {showToast && toastMessage && (
-        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[200] animate-slide-up" style={{ transform: 'translate(-50%, 0) translateZ(0)' }}>
-          <div className="bg-[rgba(28,28,30,0.95)] backdrop-blur-[25px] rounded-[var(--radius-2xl)] border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.6)] px-6 py-3 flex items-center gap-3 min-w-[200px] max-w-[90vw]">
-            <Icons.Check size={18} className="text-[#34c759] flex-shrink-0" />
-            <span className="text-white text-sm font-medium">{toastMessage}</span>
+      {
+        showToast && toastMessage && (
+          <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[200] animate-slide-up" style={{ transform: 'translate(-50%, 0) translateZ(0)' }}>
+            <div className="bg-[rgba(28,28,30,0.95)] backdrop-blur-[25px] rounded-[var(--radius-2xl)] border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.6)] px-6 py-3 flex items-center gap-3 min-w-[200px] max-w-[90vw]">
+              <Icons.Check size={18} className="text-[#34c759] flex-shrink-0" />
+              <span className="text-white text-sm font-medium">{toastMessage}</span>
+            </div>
           </div>
-        </div>
-      )}
-    </div>
+        )
+      }
+    </div >
   );
 }
