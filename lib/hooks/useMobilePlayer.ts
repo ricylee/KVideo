@@ -33,7 +33,7 @@ export function useDoubleTap({
     const currentTime = Date.now();
     const videoElement = e.currentTarget;
     const touch = e.touches[0] || e.changedTouches[0];
-    
+
     if (!touch || !videoElement) return;
 
     // Calculate touch position relative to video element
@@ -65,19 +65,19 @@ export function useDoubleTap({
     // Double tap detected (within 300ms on the same side)
     if (timeDiff < 300 && sameSide) {
       e.preventDefault();
-      
+
       if (side === 'left') {
         onDoubleTapLeft();
       } else {
         onDoubleTapRight();
       }
-      
+
       // Reset to prevent triple-tap
       lastTapRef.current = { time: 0, side: null };
     } else {
       // Possible single tap - wait to see if there's a double tap
       lastTapRef.current = { time: currentTime, side };
-      
+
       singleTapTimeoutRef.current = setTimeout(() => {
         // After 300ms, no double tap detected, execute single tap action
         onSingleTap();
@@ -100,7 +100,7 @@ export function useScreenOrientation(isFullscreen: boolean) {
     const handleOrientation = async () => {
       try {
         const screen = window.screen as any;
-        
+
         if (isFullscreen) {
           // Fullscreen: Lock to landscape
           if (screen.orientation?.lock) {
@@ -156,4 +156,22 @@ export function useIsMobile() {
   }, []);
 
   return isMobile;
+}
+
+/**
+ * Hook to detect if the device is iOS
+ */
+export function useIsIOS() {
+  const [isIOS, setIsIOS] = useState(false);
+
+  useEffect(() => {
+    const checkIOS = () => {
+      const ios = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+      setIsIOS(ios);
+    };
+
+    checkIOS();
+  }, []);
+
+  return isIOS;
 }

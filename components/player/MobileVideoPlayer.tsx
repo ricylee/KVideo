@@ -2,7 +2,7 @@
 
 import { useRef, useState, useEffect } from 'react';
 import { Icons } from '@/components/ui/Icon';
-import { useDoubleTap, useScreenOrientation } from '@/lib/hooks/useMobilePlayer';
+import { useDoubleTap, useScreenOrientation, useIsIOS } from '@/lib/hooks/useMobilePlayer';
 
 interface MobileVideoPlayerProps {
   src: string;
@@ -43,6 +43,7 @@ export function MobileVideoPlayer({
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
   const [viewportWidth, setViewportWidth] = useState(0);
+  const isIOS = useIsIOS();
 
   const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const skipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -394,6 +395,12 @@ export function MobileVideoPlayer({
     if (!containerRef.current) return;
 
     if (!isFullscreen) {
+      // iOS specific handling
+      if (isIOS && videoRef.current && (videoRef.current as any).webkitEnterFullscreen) {
+        (videoRef.current as any).webkitEnterFullscreen();
+        return;
+      }
+
       // Use container fullscreen to maintain custom controls
       // Try standard fullscreen API first
       if (containerRef.current.requestFullscreen) {
@@ -599,9 +606,6 @@ export function MobileVideoPlayer({
                     e.stopPropagation();
                     togglePlay();
                   }}
-                  onTouchEnd={(e) => {
-                    e.stopPropagation();
-                  }}
                   className={`btn-icon ${buttonPadding} flex-shrink-0 touch-manipulation relative z-[60]`}
                   aria-label={isPlaying ? 'Pause' : 'Play'}
                   style={{ WebkitTapHighlightColor: 'transparent' }}
@@ -622,11 +626,6 @@ export function MobileVideoPlayer({
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      setShowMoreMenu(!showMoreMenu);
-                    }}
-                    onTouchEnd={(e) => {
-                      e.stopPropagation();
-                      e.preventDefault();
                       setShowMoreMenu(!showMoreMenu);
                     }}
                     className={`btn-icon ${buttonPadding} flex-shrink-0 touch-manipulation`}
@@ -651,12 +650,6 @@ export function MobileVideoPlayer({
                             setShowMoreMenu(false);
                             handleCopyLink();
                           }}
-                          onTouchEnd={(e) => {
-                            e.stopPropagation();
-                            e.preventDefault();
-                            setShowMoreMenu(false);
-                            handleCopyLink();
-                          }}
                           className="w-full px-4 py-3 text-left text-sm text-white hover:bg-white/20 flex items-center gap-3 transition-all touch-manipulation"
                           style={{ WebkitTapHighlightColor: 'transparent' }}
                         >
@@ -673,12 +666,6 @@ export function MobileVideoPlayer({
                             setShowMoreMenu(false);
                             setShowVolumeMenu(true);
                           }}
-                          onTouchEnd={(e) => {
-                            e.stopPropagation();
-                            e.preventDefault();
-                            setShowMoreMenu(false);
-                            setShowVolumeMenu(true);
-                          }}
                           className="w-full px-4 py-3 text-left text-sm text-white hover:bg-white/20 flex items-center gap-3 transition-all touch-manipulation"
                           style={{ WebkitTapHighlightColor: 'transparent' }}
                         >
@@ -690,12 +677,6 @@ export function MobileVideoPlayer({
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            setShowMoreMenu(false);
-                            setShowSpeedMenu(true);
-                          }}
-                          onTouchEnd={(e) => {
-                            e.stopPropagation();
-                            e.preventDefault();
                             setShowMoreMenu(false);
                             setShowSpeedMenu(true);
                           }}
@@ -717,12 +698,6 @@ export function MobileVideoPlayer({
                               setShowMoreMenu(false);
                               togglePictureInPicture();
                             }}
-                            onTouchEnd={(e) => {
-                              e.stopPropagation();
-                              e.preventDefault();
-                              setShowMoreMenu(false);
-                              togglePictureInPicture();
-                            }}
                             className="w-full px-4 py-3 text-left text-sm text-white hover:bg-white/20 flex items-center gap-3 transition-all touch-manipulation"
                             style={{ WebkitTapHighlightColor: 'transparent' }}
                           >
@@ -739,11 +714,6 @@ export function MobileVideoPlayer({
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    toggleFullscreen();
-                  }}
-                  onTouchEnd={(e) => {
-                    e.stopPropagation();
-                    e.preventDefault();
                     toggleFullscreen();
                   }}
                   className={`btn-icon ${buttonPadding} flex-shrink-0 touch-manipulation relative z-[60]`}
