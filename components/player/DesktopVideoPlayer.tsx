@@ -2,6 +2,7 @@
 
 import { useDesktopPlayerState } from './hooks/useDesktopPlayerState';
 import { useDesktopPlayerLogic } from './hooks/useDesktopPlayerLogic';
+import { useHLSPreloader } from './hooks/useHLSPreloader';
 import { DesktopControlsWrapper } from './desktop/DesktopControlsWrapper';
 import { DesktopOverlayWrapper } from './desktop/DesktopOverlayWrapper';
 
@@ -23,6 +24,11 @@ export function DesktopVideoPlayer({
   shouldAutoPlay = false
 }: DesktopVideoPlayerProps) {
   const { refs, state } = useDesktopPlayerState();
+  const { currentTime } = state;
+
+  // Preload HLS segments
+  useHLSPreloader({ src, currentTime });
+
   const {
     videoRef,
     containerRef,

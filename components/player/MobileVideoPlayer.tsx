@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { useScreenOrientation } from '@/lib/hooks/useMobilePlayer';
 import { useMobilePlayerState } from './hooks/useMobilePlayerState';
 import { useMobilePlayerLogic } from './hooks/useMobilePlayerLogic';
+import { useHLSPreloader } from './hooks/useHLSPreloader';
 import { useMobileGestures } from './hooks/useMobileGestures';
 import { MobileControlsWrapper } from './mobile/MobileControlsWrapper';
 import { MobileOverlay } from './mobile/MobileOverlay';
@@ -27,6 +28,11 @@ export function MobileVideoPlayer({
   shouldAutoPlay = false
 }: MobileVideoPlayerProps) {
   const { refs, state } = useMobilePlayerState();
+  const { currentTime } = state;
+
+  // Preload HLS segments
+  useHLSPreloader({ src, currentTime });
+
   const {
     videoRef,
     containerRef,

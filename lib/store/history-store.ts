@@ -6,12 +6,13 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { VideoHistoryItem, Episode } from '@/lib/types';
+import { clearSegmentsForUrl, clearAllCache } from '@/lib/utils/cacheManager';
 
 const MAX_HISTORY_ITEMS = 50;
 
 interface HistoryStore {
   viewingHistory: VideoHistoryItem[];
-  
+
   // Actions
   addToHistory: (
     videoId: string | number,
@@ -24,7 +25,7 @@ interface HistoryStore {
     poster?: string,
     episodes?: Episode[]
   ) => void;
-  
+
   removeFromHistory: (videoId: string | number, source: string) => void;
   clearHistory: () => void;
 }
@@ -112,6 +113,16 @@ export const useHistoryStore = create<HistoryStore>()(
       },
 
       removeFromHistory: (videoId, source) => {
+        const state = get();
+        const itemToRemove = state.viewingHistory.find(
+          (item) => item.videoId === videoId && item.source === source
+        );
+
+        if (itemToRemove) {
+          // Clear cache for this video
+          clearSegmentsForUrl(itemToRemove.url);
+        }
+
         set((state) => ({
           viewingHistory: state.viewingHistory.filter(
             (item) => !(item.videoId === videoId && item.source === source)
@@ -120,6 +131,8 @@ export const useHistoryStore = create<HistoryStore>()(
       },
 
       clearHistory: () => {
+        // Clear all cached segments
+        clearAllCache();
         set({ viewingHistory: [] });
       },
     }),
