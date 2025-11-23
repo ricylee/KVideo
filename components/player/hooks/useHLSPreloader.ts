@@ -61,6 +61,10 @@ export function useHLSPreloader({ src, currentTime }: UseHLSPreloaderProps) {
                 }
             }
 
+            // Offset start index by 3 segments to avoid competing with browser playback
+            // The browser needs the immediate segments NOW; we preload the future.
+            startIndex = Math.min(startIndex + 3, segmentsRef.current.length - 1);
+
             if (startIndex >= segmentsRef.current.length) return;
 
             // Check if this is sequential playback or a seek

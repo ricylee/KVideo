@@ -79,9 +79,12 @@ export function useMobilePlaybackControls({
         setIsLoading(false);
 
         // Fix for stuck at 00:00:00:
-        // If initialTime is 0, we seek to a tiny offset to help the browser/HLS buffer start.
-        const startPosition = initialTime > 0 ? initialTime : 0.1;
-        videoRef.current.currentTime = startPosition;
+        // Only seek if we are at the very start (to avoid overwriting a previous seek)
+        if (videoRef.current.currentTime < 0.5) {
+            // If initialTime is 0, we seek to a tiny offset to help the browser/HLS buffer start.
+            const startPosition = initialTime > 0 ? initialTime : 0.1;
+            videoRef.current.currentTime = startPosition;
+        }
 
         videoRef.current.play().catch((err: Error) => {
             console.warn('Autoplay was prevented:', err);
