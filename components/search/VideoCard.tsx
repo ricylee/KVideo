@@ -17,6 +17,7 @@ interface VideoCardProps {
     cardId: string;
     isActive: boolean;
     onCardClick: (e: React.MouseEvent, cardId: string, videoUrl: string) => void;
+    priority?: boolean;
 }
 
 export const VideoCard = memo<VideoCardProps>(({
@@ -24,7 +25,8 @@ export const VideoCard = memo<VideoCardProps>(({
     videoUrl,
     cardId,
     isActive,
-    onCardClick
+    onCardClick,
+    priority = false
 }) => {
     return (
         <div
@@ -60,7 +62,8 @@ export const VideoCard = memo<VideoCardProps>(({
                                 fill
                                 className="object-cover rounded-[var(--radius-2xl)]"
                                 sizes="(max-width: 640px) 33vw, (max-width: 1024px) 20vw, 16vw"
-                                loading="lazy"
+                                loading={priority ? "eager" : "lazy"}
+                                priority={priority}
                                 unoptimized
                                 referrerPolicy="no-referrer"
                                 onError={(e) => {

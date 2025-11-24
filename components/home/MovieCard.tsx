@@ -21,9 +21,10 @@ interface DoubanMovie {
 interface MovieCardProps {
   movie: DoubanMovie;
   onMovieClick: (movie: DoubanMovie) => void;
+  priority?: boolean;
 }
 
-export const MovieCard = memo(function MovieCard({ movie, onMovieClick }: MovieCardProps) {
+export const MovieCard = memo(function MovieCard({ movie, onMovieClick, priority = false }: MovieCardProps) {
   return (
     <Link
       href={`/?q=${encodeURIComponent(movie.title)}`}
@@ -45,7 +46,8 @@ export const MovieCard = memo(function MovieCard({ movie, onMovieClick }: MovieC
             fill
             className="object-cover transition-transform duration-300 group-hover:scale-105 rounded-[var(--radius-2xl)]"
             sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
-            loading="lazy"
+            loading={priority ? "eager" : "lazy"}
+            priority={priority}
             unoptimized
             referrerPolicy="no-referrer"
             onError={(e) => {

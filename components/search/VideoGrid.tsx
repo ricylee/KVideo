@@ -89,7 +89,7 @@ export const VideoGrid = memo(function VideoGrid({ videos, className = '' }: Vid
           contentVisibility: 'auto',
         }}
       >
-        {visibleItems.map(({ video, videoUrl, cardId }) => {
+        {visibleItems.map(({ video, videoUrl, cardId }, index) => {
           const isActive = activeCardId === cardId;
 
           return (
@@ -100,6 +100,7 @@ export const VideoGrid = memo(function VideoGrid({ videos, className = '' }: Vid
               cardId={cardId}
               isActive={isActive}
               onCardClick={handleCardClick}
+              priority={index < 10}
             />
           );
         })}
