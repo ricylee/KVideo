@@ -15,8 +15,9 @@ export async function fetchWithRetry({ url, request, headers = {} }: FetchWithRe
     ];
     const randomUA = userAgents[Math.floor(Math.random() * userAgents.length)];
 
-    // Smart Referer: use provided or default to origin
-    const referer = request.nextUrl.searchParams.get('referer') || new URL(url).origin;
+    // Smart Referer: use video domain instead of kvideo.vercel.app to avoid suspicion
+    const videoUrl = new URL(url);
+    const referer = request.nextUrl.searchParams.get('referer') || `${videoUrl.protocol}//${videoUrl.hostname}`;
 
     // Optional IP forwarding (default: Beijing IP)
     const forwardedIP = request.nextUrl.searchParams.get('ip') || '202.108.22.5';
@@ -39,12 +40,20 @@ export async function fetchWithRetry({ url, request, headers = {} }: FetchWithRe
 
             response = await fetch(url, {
                 headers: {
-                    ...headers, // First: forwarded headers (Cookie, Accept, Range)
+                    ...headers, // First: forwarded headers (Cookie, Range)
                     // Then override with anti-blocking headers (these take precedence)
                     'User-Agent': randomUA,
+                    'Accept': '*/*',
+                    'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
+                    'Accept-Encoding': 'gzip, deflate, br',
+                    'Connection': 'keep-alive',
                     'X-Forwarded-For': forwardedIP,
                     'Client-IP': forwardedIP,
                     'Referer': referer,
+                    'Origin': `${videoUrl.protocol}//${videoUrl.hostname}`,
+                    'Sec-Fetch-Dest': 'empty',
+                    'Sec-Fetch-Mode': 'cors',
+                    'Sec-Fetch-Site': 'cross-site',
                 },
                 signal: controller.signal,
             });
