@@ -24,6 +24,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/gapi.auth2": "^0.0.61",
     "@types/node": "^24",
     "@types/react": "^19",
     "@types/react-dom": "^19",

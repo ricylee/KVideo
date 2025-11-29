@@ -1,9 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
-import { gapi } from 'gapi-script';
 
 const DISCOVERY_DOCS = ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'];
 const SCOPES = 'https://www.googleapis.com/auth/drive.appdata';
 const APP_DATA_FILENAME = 'kvideo_data.json';
+
+// Type declarations for gapi
+declare const gapi: any;
 
 export interface GoogleUser {
     name: string;
@@ -24,9 +26,23 @@ export function useGoogleDrive() {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
+        // Only run on client side
+        if (typeof window === 'undefined') return;
+
         const initClient = async () => {
             try {
-                await new Promise<void>((resolve, reject) => {
+                // Dynamically load gapi script
+                if (!window.gapi) {
+                    await new Promise<void>((resolve, reject) => {
+                        const script = document.createElement('script');
+                        script.src = 'https://apis.google.com/js/api.js';
+                        script.onload = () => resolve();
+                        script.onerror = () => reject(new Error('Failed to load gapi script'));
+                        document.body.appendChild(script);
+                    });
+                }
+
+                await new Promise<void>((resolve) => {
                     gapi.load('client:auth2', () => {
                         resolve();
                     });

@@ -1,3 +1,5 @@
+'use client';
+
 import { useSync } from '@/lib/hooks/useSync';
 import { Icons } from '@/components/ui/Icon';
 import { Button } from '@/components/ui/Button';
