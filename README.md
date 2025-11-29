@@ -552,14 +552,11 @@ docker pull kuekhaoyang/kvideo:1.0.0
 docker run -d -p 3000:3000 --name kvideo kuekhaoyang/kvideo:1.0.0
 ```
 
-> **✨ 多架构支持**：镜像支持 7 种平台架构，可在几乎所有设备上运行：
-> - `linux/amd64` - Intel/AMD 64位（大多数服务器、PC）
-> - `linux/arm64` - ARM 64位（Apple Silicon Mac、AWS Graviton、树莓派 4/5）
+> **✨ 多架构支持**：镜像支持 4 种主流平台架构，覆盖 99% 的使用场景：
+> - `linux/amd64` - Intel/AMD 64位（大多数服务器、PC、Intel Mac）
+> - `linux/arm64` - ARM 64位（**Apple Silicon Mac**、AWS Graviton、树莓派 4/5）
 > - `linux/arm/v7` - ARM 32位 v7（树莓派 2/3/4）
 > - `linux/arm/v6` - ARM 32位 v6（树莓派 1/Zero）
-> - `linux/386` - x86 32位（老旧 PC）
-> - `linux/ppc64le` - PowerPC 64位
-> - `linux/s390x` - IBM System z
 
 #### 4. 如何更新镜像
 
