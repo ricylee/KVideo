@@ -22,3 +22,12 @@ export function getCopyUrl(src: string, type: 'original' | 'proxy' = 'original')
 
     return urlToCopy;
 }
+
+export function getProxyUrl(src: string): string {
+    if (!src) return '';
+    if (src.includes('/api/proxy')) return src;
+
+    // Handle server-side vs client-side origin
+    const origin = typeof window !== 'undefined' ? window.location.origin : '';
+    return `${origin}/api/proxy?url=${encodeURIComponent(src)}`;
+}

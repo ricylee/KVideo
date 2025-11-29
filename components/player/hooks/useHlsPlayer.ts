@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import Hls from 'hls.js';
+import { getProxyUrl } from '../utils/urlUtils';
 
 interface UseHlsPlayerProps {
     videoRef: React.RefObject<HTMLVideoElement | null>;
@@ -27,6 +28,7 @@ export function useHlsPlayer({
         }
 
         let hls: Hls | null = null;
+        const proxiedSrc = getProxyUrl(src);
 
         // Check if HLS is supported natively (Safari, Mobile Chrome)
         // We prefer native playback if available as it's usually more battery efficient
@@ -49,7 +51,7 @@ export function useHlsPlayer({
                 });
                 hlsRef.current = hls;
 
-                hls.loadSource(src);
+                hls.loadSource(proxiedSrc);
                 hls.attachMedia(video);
 
                 hls.on(Hls.Events.MANIFEST_PARSED, () => {
@@ -117,12 +119,12 @@ export function useHlsPlayer({
             } else {
                 console.log('[HLS] Using native HLS support');
                 // Native HLS support
-                video.src = src;
+                video.src = proxiedSrc;
             }
         } else if (isNativeHlsSupported) {
             // Fallback for environments where Hls.js is not supported but native is (e.g. iOS without MSE?)
             console.log('[HLS] Using native HLS support (Hls.js not supported)');
-            video.src = src;
+            video.src = proxiedSrc;
         } else {
             console.error('[HLS] HLS not supported in this browser');
         }
