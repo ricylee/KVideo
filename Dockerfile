@@ -28,18 +28,22 @@ COPY . .
 # Uncomment the following line in case you want to disable telemetry during the build.
 # ENV NEXT_TELEMETRY_DISABLED 1
 
-RUN \
-  if [ -f yarn.lock ]; then yarn run build; \
-  elif [ -f package-lock.json ]; then npm run build; \
-  elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm run build; \
-  else echo "Lockfile not found." && exit 1; \
+RUN set -ex && \
+  if [ -f yarn.lock ]; then \
+    echo "Building with Yarn..." && yarn run build; \
+  elif [ -f package-lock.json ]; then \
+    echo "Building with NPM..." && npm run build; \
+  elif [ -f pnpm-lock.yaml ]; then \
+    echo "Building with PNPM..." && corepack enable pnpm && pnpm run build; \
+  else \
+    echo "ERROR: Lockfile not found." && exit 1; \
   fi
 
 # Production image, copy all the files and run next
 FROM base AS runner
 WORKDIR /app
 
-ENV NODE_ENV production
+ENV NODE_ENV=production
 # Uncomment the following line in case you want to disable telemetry during runtime.
 # ENV NEXT_TELEMETRY_DISABLED 1
 
@@ -61,8 +65,8 @@ USER nextjs
 
 EXPOSE 3000
 
-ENV PORT 3000
+ENV PORT=3000
 # set hostname to localhost
-ENV HOSTNAME "0.0.0.0"
+ENV HOSTNAME="0.0.0.0"
 
 CMD ["node", "server.js"]
