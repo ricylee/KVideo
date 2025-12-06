@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { ADULT_SOURCES } from '@/lib/api/adult-sources';
 
+export const runtime = 'edge';
 export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const categoryParam = searchParams.get('category') || ''; // Format: "sourceId:typeId" or just "typeId" or empty
