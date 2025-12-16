@@ -127,7 +127,7 @@
 
 #### 选项 1：Vercel 一键部署（推荐）
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/KuekHaoYang/KVideo)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/ricylee/KVideo)
 
 1. 点击上方按钮
 2. 连接你的 GitHub 账号
