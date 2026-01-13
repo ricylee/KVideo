@@ -156,6 +156,7 @@ export function useDesktopPlayerLogic({
         handleVideoError: playbackControls.handleVideoError,
         handleProgressClick: progressControls.handleProgressClick,
         handleProgressMouseDown: progressControls.handleProgressMouseDown,
+        handleProgressTouchStart: progressControls.handleProgressTouchStart,
         toggleMute: volumeControls.toggleMute,
         showVolumeBarTemporarily: volumeControls.showVolumeBarTemporarily,
         handleVolumeChange: volumeControls.handleVolumeChange,

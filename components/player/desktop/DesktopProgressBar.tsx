@@ -7,6 +7,7 @@ interface DesktopProgressBarProps {
     duration: number;
     onProgressClick: (e: React.MouseEvent<HTMLDivElement>) => void;
     onProgressMouseDown: (e: React.MouseEvent<HTMLDivElement>) => void;
+    onProgressTouchStart: (e: React.TouchEvent<HTMLDivElement>) => void;
 }
 
 export function DesktopProgressBar({
@@ -14,7 +15,8 @@ export function DesktopProgressBar({
     currentTime,
     duration,
     onProgressClick,
-    onProgressMouseDown
+    onProgressMouseDown,
+    onProgressTouchStart
 }: DesktopProgressBarProps) {
     return (
         <div className="px-4 pb-1">
@@ -23,6 +25,7 @@ export function DesktopProgressBar({
                 className="slider-track cursor-pointer"
                 onClick={onProgressClick}
                 onMouseDown={onProgressMouseDown}
+                onTouchStart={onProgressTouchStart}
                 style={{ pointerEvents: 'auto' }}
             >
                 <div

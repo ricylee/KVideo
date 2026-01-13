@@ -37,6 +37,7 @@ export function DesktopControlsWrapper({ src, data, actions, logic, refs }: Desk
         showCastMenu,
         handleProgressClick,
         handleProgressMouseDown,
+        handleProgressTouchStart,
         formatTime,
     } = logic;
 
@@ -73,6 +74,7 @@ export function DesktopControlsWrapper({ src, data, actions, logic, refs }: Desk
             onShowCastMenu={showCastMenu}
             onProgressClick={handleProgressClick}
             onProgressMouseDown={handleProgressMouseDown}
+            onProgressTouchStart={handleProgressTouchStart}
             formatTime={formatTime}
         />
     );
