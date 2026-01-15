@@ -40,4 +40,6 @@ export const DEFAULT_SOURCES: VideoSource[] = [
     { id: 'xinlang2', name: '新浪HTTPS', baseUrl: 'https://api.xinlangapi.com/xinlangapi.php/provide/vod', searchPath: '', detailPath: '', enabled: true, priority: 36 },
     { id: 'yilingba2', name: '1080JSON', baseUrl: 'https://api.1080zyku.com/inc/apijson.php', searchPath: '', detailPath: '', enabled: true, priority: 37 },
     { id: 'lezi2', name: '乐子HTTP', baseUrl: 'http://cj.lziapi.com/api.php/provide/vod', searchPath: '', detailPath: '', enabled: true, priority: 38 },
+    { id: 'wwzy', name: '旺旺短剧', baseUrl: 'https://wwzy.tv/api.php/provide/vod', searchPath: '', detailPath: '', enabled: true, priority: 39 },
+    { id: 'haiwaikan', name: '海外看资源', baseUrl: 'https://haiwaikan.com/api.php/provide/vod/', searchPath: '', detailPath: '', enabled: true, priority: 40 },
 ];
