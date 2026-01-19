@@ -38,7 +38,7 @@ export const PREMIUM_SOURCES: VideoSource[] = [
     { id: 'guangsu2',  name: '光速', baseUrl: 'http://api.guangsuapi.com/api.php/provide/vod',  searchPath: '',  detailPath: '',  enabled: true,  priority: 35 }, 
     { id: 'xinlang2',  name: '新浪', baseUrl: 'https://api.xinlangapi.com/xinlangapi.php/provide/vod',  searchPath: '',  detailPath: '',  enabled: true,  priority: 36 }, 
     { id: 'yilingba2',  name: '1080JSON', baseUrl: 'https://api.1080zyku.com/inc/apijson.php',  searchPath: '',  detailPath: '',  enabled: true,  priority: 37 }, 
-    { id: 'lezi2',  name: '乐子baseUrl: 'http', baseUrl: 'http://cj.lziapi.com/api.php/provide/vod',  searchPath: '',  detailPath: '',  enabled: true,  priority: 38 }, 
+    { id: 'lezi2',  name: '乐子', baseUrl: 'http://cj.lziapi.com/api.php/provide/vod',  searchPath: '',  detailPath: '',  enabled: true,  priority: 38 }, 
     { id: 'hnzy',  name: '火鸟资源', baseUrl: 'https://hnzyapi.com/api.php/provide/vod',  searchPath: '',  detailPath: '',  enabled: true,  priority: 39 }, 
     { id: 'lzzy',  name: '量子资源', baseUrl: 'https://api.liangzizy.com/inc/apijson_vod.php',  searchPath: '',  detailPath: '',  enabled: true,  priority: 40 }, 
     { id: 'ffzy',  name: '非凡资源', baseUrl: 'https://ffzyapi.com/api.php/provide/vod',  searchPath: '',  detailPath: '',  enabled: true,  priority: 41 }, 
