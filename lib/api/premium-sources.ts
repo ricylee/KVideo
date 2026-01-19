@@ -1,7 +1,7 @@
 import type { VideoSource } from '@/lib/types';
 
 export const PREMIUM_SOURCES: VideoSource[] = [
-    { id: 'feifan',  name: '非凡资源', baseUrl: 'http://ffzy5.tv/api.php/provide/vod',  searchPath: '',  detailPath: '',  enabled: true,  priority: 1 }, 
+     { id: 'feifan',  name: '非凡资源', baseUrl: 'http://ffzy5.tv/api.php/provide/vod',  searchPath: '',  detailPath: '',  enabled: true,  priority: 1 }, 
     { id: 'wolong',  name: '卧龙资源', baseUrl: 'https://wolongzyw.com/api.php/provide/vod',  searchPath: '',  detailPath: '',  enabled: true,  priority: 2 }, 
     { id: 'zuida',  name: '最大资源', baseUrl: 'https://api.zuidapi.com/api.php/provide/vod',  searchPath: '',  detailPath: '',  enabled: true,  priority: 3 }, 
     { id: 'baiduyun',  name: '百度云资源', baseUrl: 'https://api.apibdzy.com/api.php/provide/vod',  searchPath: '',  detailPath: '',  enabled: true,  priority: 4 }, 
@@ -242,7 +242,7 @@ export const PREMIUM_SOURCES: VideoSource[] = [
     { id: 'kauicheziyuan',  name: '快车资源阿', baseUrl: 'https://caiji.kuaichezy.org/api.php/provide',  searchPath: '',  detailPath: '',  enabled: true,  priority: 239 }, 
     { id: 'xinlangaa',  name: '新浪资源阿', baseUrl: 'https://api.xinlangapi.com/xinlangapi.php/provide/vod',  searchPath: '',  detailPath: '',  enabled: true,  priority: 240 }, 
     { id: 'lajiaoziyu',  name: '辣椒资源黄黄', baseUrl: 'https://apilj.com/api.php/provide',  searchPath: '',  detailPath: '',  enabled: true,  priority: 241 }, 
-    { id: 'youzhidianying',  name: '优质资源库', baseUrl: 'https://api.yzzy-api.com/inc/ldg_api_all.php/provide/vod',  searchPath: '',  detailPath: '',  enabled: true,  priority: 242 }, 
+    { id: 'youzhidianying',  name: '优质资源库高清', baseUrl: 'https://api.yzzy-api.com/inc/ldg_api_all.php/provide/vod',  searchPath: '',  detailPath: '',  enabled: true,  priority: 242 }, 
     { id: 'iqiyi',  name: 'iqiyi资源', baseUrl: 'https://www.iqiyizyapi.com/api.php/provide/vod',  searchPath: '',  detailPath: '',  enabled: true,  priority: 243 }, 
     { id: 'xibaocaiji',  name: '细胞采集黄色', baseUrl: 'https://www.xxibaozyw.com/api.php/provide/vod',  searchPath: '',  detailPath: '',  enabled: true,  priority: 244 }, 
     { id: 'qiqiqiqi',  name: '七七影视', baseUrl: 'https://www.qiqidys.com/api.php/provide/vod/',  searchPath: '',  detailPath: '',  enabled: true,  priority: 245 }, 
